@@ -1,6 +1,6 @@
 (function ($) {
 
-  Drupal.behaviors.autologout = {
+  Backdrop.behaviors.autologout = {
     attach: function(context, settings) {
 
       if (context != document) {
@@ -68,7 +68,7 @@
       }
 
       function init() {
-        var noDialog = Drupal.settings.autologout.no_dialog;
+        var noDialog = Backdrop.settings.autologout.no_dialog;
 
         if (activity) {
           // The user has been active on the page.
@@ -84,7 +84,7 @@
           // While the countdown timer is going, lookup the remaining time. If there
           // is more time remaining (i.e. a user is navigating in another tab), then
           // reset the timer for opening the dialog.
-          Drupal.ajax['autologout.getTimeLeft'].autologoutGetTimeLeft(function(time) {
+          Backdrop.ajax['autologout.getTimeLeft'].autologoutGetTimeLeft(function(time) {
               if (time > 0) {
                 clearTimeout(paddingTimer);
                 t = setTimeout(init, time);
@@ -103,13 +103,13 @@
 
       function dialog() {
         var buttons = {};
-        buttons[Drupal.t('Yes')] = function() {
+        buttons[Backdrop.t('Yes')] = function() {
           $(this).dialog("destroy");
           clearTimeout(paddingTimer);
           refresh();
         };
 
-        buttons[Drupal.t('No')] = function() {
+        buttons[Backdrop.t('No')] = function() {
           $(this).dialog("destroy");
           logout();
         };
@@ -132,7 +132,7 @@
       function confirmLogout() {
         $(theDialog).dialog('destroy');
 
-        Drupal.ajax['autologout.getTimeLeft'].autologoutGetTimeLeft(function(time) {
+        Backdrop.ajax['autologout.getTimeLeft'].autologoutGetTimeLeft(function(time) {
           if (time > 0) {
             t = setTimeout(init, time);
           }
@@ -144,11 +144,11 @@
 
       function logout() {
         if (localSettings.use_alt_logout_method) {
-          window.location = Drupal.settings.basePath + "?q=autologout_ahah_logout/alt";
+          window.location = Backdrop.settings.basePath + "?q=autologout_ahah_logout/alt";
         }
         else {
           $.ajax({
-            url: Drupal.settings.basePath + "?q=autologout_ahah_logout",
+            url: Backdrop.settings.basePath + "?q=autologout_ahah_logout",
             type: "POST",
             success: function() {
               window.location = localSettings.redirect_url;
@@ -163,14 +163,14 @@
       }
 
       /**
-       * Use the Drupal ajax library to handle get time remaining events
+       * Use the Backdrop ajax library to handle get time remaining events
        * because if using the JS Timer, the return will update it.
        *
        * @param function callback(time)
        *   The function to run when ajax is successful. The time parameter
        *   is the time remaining for the current user in ms.
        */
-      Drupal.ajax.prototype.autologoutGetTimeLeft = function(callback) {
+      Backdrop.ajax.prototype.autologoutGetTimeLeft = function(callback) {
         var ajax = this;
 
         if (ajax.ajaxing) {
@@ -190,7 +190,7 @@
 
           callback(response[2].settings.time);
 
-          // Let Drupal.ajax handle the JSON response.
+          // Let Backdrop.ajax handle the JSON response.
           return ajax.success(response, status);
         };
 
@@ -203,8 +203,8 @@
         }
       };
 
-      Drupal.ajax['autologout.getTimeLeft'] = new Drupal.ajax(null, $(document.body), {
-        url: Drupal.settings.basePath  + '?q=autologout_ajax_get_time_left',
+      Backdrop.ajax['autologout.getTimeLeft'] = new Backdrop.ajax(null, $(document.body), {
+        url: Backdrop.settings.basePath  + '?q=autologout_ajax_get_time_left',
         event: 'autologout.getTimeLeft',
         error: function(XMLHttpRequest, textStatus) {
           // Disable error reporting to the screen.
@@ -212,7 +212,7 @@
       });
 
       /**
-       * Use the Drupal ajax library to handle refresh events
+       * Use the Backdrop ajax library to handle refresh events
        * because if using the JS Timer, the return will update
        * it.
        *
@@ -220,7 +220,7 @@
        *   The function to tell the timer to run after its been
        *   restarted.
        */
-      Drupal.ajax.prototype.autologoutRefresh = function(timerfunction) {
+      Backdrop.ajax.prototype.autologoutRefresh = function(timerfunction) {
         var ajax = this;
 
         if (ajax.ajaxing) {
@@ -241,7 +241,7 @@
           t = setTimeout(timerfunction, localSettings.timeout);
           activity = false;
 
-          // Let Drupal.ajax handle the JSON response.
+          // Let Backdrop.ajax handle the JSON response.
           return ajax.success(response, status);
         };
 
@@ -254,8 +254,8 @@
         }
       };
 
-      Drupal.ajax['autologout.refresh'] = new Drupal.ajax(null, $(document.body), {
-        url: Drupal.settings.basePath  + '?q=autologout_ahah_set_last',
+      Backdrop.ajax['autologout.refresh'] = new Backdrop.ajax(null, $(document.body), {
+        url: Backdrop.settings.basePath  + '?q=autologout_ahah_set_last',
         event: 'autologout.refresh',
         error: function(XMLHttpRequest, textStatus) {
           // Disable error reporting to the screen.
@@ -263,11 +263,11 @@
       });
 
       function keepAlive() {
-        Drupal.ajax['autologout.refresh'].autologoutRefresh(keepAlive);
+        Backdrop.ajax['autologout.refresh'].autologoutRefresh(keepAlive);
       }
 
       function refresh() {
-        Drupal.ajax['autologout.refresh'].autologoutRefresh(init);
+        Backdrop.ajax['autologout.refresh'].autologoutRefresh(init);
       }
 
       // Check if the page was loaded via a back button click.

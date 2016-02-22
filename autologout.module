@@ -30,7 +30,7 @@ function autologout_menu() {
   $items['admin/config/people/autologout'] = array(
     'title' => 'Auto Logout',
     'description' => 'Administer Auto Logout settings.',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('autologout_settings'),
     'access arguments' => array('administer autologout'),
     'file' => 'autologout.admin.inc',
@@ -96,7 +96,7 @@ function autologout_block_view($delta = '') {
     $block['content'] = t('Autologout does not apply on the current page, you will be kept logged in whilst this page remains open.');
   }
   elseif (module_exists('jstimer') && module_exists('jst_timer')) {
-    $block['content'] = array(drupal_get_form('autologout_create_block_form'));
+    $block['content'] = array(backdrop_get_form('autologout_create_block_form'));
   }
   else {
     $timeout = (int) variable_get('autologout_timeout', 1800);
@@ -107,7 +107,7 @@ function autologout_block_view($delta = '') {
 }
 
 /**
- * Drupal reset timer form on timer block.
+ * Backdrop reset timer form on timer block.
  */
 function autologout_create_block_form() {
 
@@ -154,11 +154,11 @@ function autologout_block_configure($delta = '') {
 
   if (module_exists('jstimer')) {
     if (!module_exists('jst_timer')) {
-      drupal_set_message(t('The "Widget: timer" module must also be enabled for the dynamic countdown to work in the automated logout block.'), 'error');
+      backdrop_set_message(t('The "Widget: timer" module must also be enabled for the dynamic countdown to work in the automated logout block.'), 'error');
     }
 
     if (variable_get('jstimer_js_load_option', 0) != 1) {
-      drupal_set_message(t("The Javascript timer module's 'Javascript load options' setting should be set to 'Every page' for the dynamic countdown to work in the automated logout block."), 'error');
+      backdrop_set_message(t("The Javascript timer module's 'Javascript load options' setting should be set to 'Every page' for the dynamic countdown to work in the automated logout block."), 'error');
     }
   }
 
@@ -217,9 +217,9 @@ function theme_autologout_render_table($variables) {
   $rows = array();
   foreach (user_roles(TRUE) as $key => $role) {
     $rows[] = array(
-      'enable' => drupal_render($element['autologout_roles']['autologout_role_' . $key]),
+      'enable' => backdrop_render($element['autologout_roles']['autologout_role_' . $key]),
       'name' => t($role),
-      'timeout' => drupal_render($element['autologout_roles']['autologout_role_' . $key . '_timeout']),
+      'timeout' => backdrop_render($element['autologout_roles']['autologout_role_' . $key . '_timeout']),
     );
   }
 
@@ -374,10 +374,10 @@ function autologout_init() {
   $timeout = _autologout_get_user_timeout();
   $timeout_padding = variable_get('autologout_padding', 10);
   $redirect_url = variable_get('autologout_redirect_url', 'user/login');
-  $redirect_query = drupal_get_destination() + array('autologout_timeout' => 1);
+  $redirect_query = backdrop_get_destination() + array('autologout_timeout' => 1);
   $no_dialog = variable_get('autologout_no_dialog', FALSE);
   $use_alt_logout_method = variable_get('autologout_use_alt_logout_method', FALSE);
-  drupal_add_library('system', 'ui.dialog');
+  backdrop_add_library('system', 'ui.dialog');
 
   // Get all settings JS will need for dialog.
   $msg = t(variable_get('autologout_message', 'Your session is about to expire. Do you want to reset it?'));
@@ -386,7 +386,7 @@ function autologout_init() {
     'timeout_padding' => $timeout_padding * 1000,
     'message' => $msg,
     'redirect_url' => url($redirect_url, array('query' => $redirect_query)),
-    'title' => t('@name Alert', array('@name' => variable_get('site_name', 'Drupal'))),
+    'title' => t('@name Alert', array('@name' => variable_get('site_name', 'Backdrop'))),
     'refresh_only' => $refresh_only,
     'no_dialog' => $no_dialog,
     'use_alt_logout_method' => $use_alt_logout_method,
@@ -400,9 +400,9 @@ function autologout_init() {
     $settings['redirect_url'] = url($redirect_url, array('query' => array('destination' => urlencode($relative_url)), 'autologout_timeout' => 1));
   }
 
-  drupal_add_library('system', 'drupal.ajax');
-  drupal_add_js(array('autologout' => $settings), 'setting');
-  drupal_add_js(drupal_get_path('module', 'autologout') . "/autologout.js");
+  backdrop_add_library('system', 'backdrop.ajax');
+  backdrop_add_js(array('autologout' => $settings), 'setting');
+  backdrop_add_js(backdrop_get_path('module', 'autologout') . "/autologout.js");
 
   // We need a backup plan if JS is disabled.
   if (!$refresh_only && isset($_SESSION['autologout_last'])) {
@@ -410,13 +410,13 @@ function autologout_init() {
     if (($now - $_SESSION['autologout_last']) >= ($timeout + (int) $timeout_padding)) {
       _autologout_logout();
 
-      // User has changed so force Drupal to remake decisions based on user.
+      // User has changed so force Backdrop to remake decisions based on user.
       global $theme, $theme_key;
-      drupal_static_reset();
+      backdrop_static_reset();
       $theme = NULL;
       $theme_key = NULL;
       menu_set_custom_theme();
-      drupal_theme_initialize();
+      backdrop_theme_initialize();
       _autologout_inactivity_message();
     }
     else {
@@ -525,10 +525,10 @@ function autologout_ahah_logout($type = 'ajax') {
 
   if ($type !== 'ajax') {
     $redirect_url = variable_get('autologout_redirect_url', 'user/login');
-    drupal_goto($redirect_url);
+    backdrop_goto($redirect_url);
   }
 
-  drupal_exit();
+  backdrop_exit();
 }
 
 /**
@@ -590,7 +590,7 @@ function _autologout_get_user_timeout($uid = NULL) {
 
   if (is_numeric($user_timeout = variable_get('autologout_user_' . $user->uid, FALSE))) {
     // User timeout takes precedence.
-    drupal_alter('autologout_timeout', $user_timeout);
+    backdrop_alter('autologout_timeout', $user_timeout);
     return $user_timeout;
   }
 
@@ -610,14 +610,14 @@ function _autologout_get_user_timeout($uid = NULL) {
     if (!empty($output)) {
       // If one of the user's roles has a unique timeout, use this.
       $timeout = min($output);
-      drupal_alter('autologout_timeout', $timeout);
+      backdrop_alter('autologout_timeout', $timeout);
       return $timeout;
     }
   }
 
   // If no user or role override exists, return the default timeout.
   $timeout = variable_get('autologout_timeout', 1800);
-  drupal_alter('autologout_timeout', $timeout);
+  backdrop_alter('autologout_timeout', $timeout);
   return $timeout;
 }
 
@@ -636,7 +636,7 @@ function _autologout_logout() {
   session_destroy();
 
   // Load the anonymous user.
-  $user = drupal_anonymous_user();
+  $user = backdrop_anonymous_user();
 }
 
 /**
@@ -659,9 +659,9 @@ function _autologout_logout_role($user) {
  */
 function _autologout_inactivity_message() {
   $message = variable_get('autologout_inactivity_message', 'You have been logged out due to inactivity.');
-  drupal_alter('autologout_message', $message);
+  backdrop_alter('autologout_message', $message);
   if (!empty($message)) {
-    drupal_set_message($message);
+    backdrop_set_message($message);
   }
 }
 

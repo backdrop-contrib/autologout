@@ -1,5 +1,5 @@
 name = Automated Logout
 description = Adds automated timed logout
-core = 7.x
-files[]=tests/autologout.test
+backdrop = 1.x
+type = module
 configure = admin/config/people/autologout
