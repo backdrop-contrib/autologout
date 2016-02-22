@@ -14,11 +14,11 @@ function autologout_settings() {
 
   if (module_exists('jstimer')) {
     if (!module_exists('jst_timer')) {
-      drupal_set_message(t('The "Widget: timer" module must also be enabled for the dynamic countdown to work in the automated logout block.'), 'error');
+      backdrop_set_message(t('The "Widget: timer" module must also be enabled for the dynamic countdown to work in the automated logout block.'), 'error');
     }
 
     if (variable_get('jstimer_js_load_option', 0) != 1) {
-      drupal_set_message(t("The Javascript timer module's 'Javascript load options' setting should be set to 'Every page' for the dynamic countdown to work in the automated logout block."), 'error');
+      backdrop_set_message(t("The Javascript timer module's 'Javascript load options' setting should be set to 'Every page' for the dynamic countdown to work in the automated logout block."), 'error');
     }
   }
 
