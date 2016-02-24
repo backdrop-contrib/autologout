@@ -1,0 +1,23 @@
+[Autologout]
+name = Autologout Session Cleanup Tests
+description = Ensure that the autologout module cleans up stale sessions at login.
+group = Autologout
+file = autologout.test
+
+[AutologoutTestCase]
+name = Autologout Tests
+description = Ensure that the autologout module functions as expected.
+group = Autologout
+file = autologout.test
+
+[AutologoutAjaxTestCase]
+name = Autologout Ajax Tests
+description = Ensure the AJAX endpoints work as expected.
+group = Autologout
+file = autologout.test
+
+[AutoLogoutByRoleTestCase]
+name = Autologout Tests by role
+description = Ensure that the auto logout module functions as expected for a normal (non admin) user with a role.
+group = Autologout
+file = autologout.test

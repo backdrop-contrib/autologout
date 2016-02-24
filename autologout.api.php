@@ -37,7 +37,7 @@ function hook_autologout_prevent() {
 function hook_autologout_refresh_only() {
   // Check to see if an open admin page will keep
   // login alive.
-  if (arg(0) == 'admin' && !variable_get('autologout_enforce_admin', FALSE)) {
+  if (arg(0) == 'admin' && !config_get('autologout.settings','autologout_enforce_admin')) {
     return TRUE;
   }
 }

@@ -10,14 +10,14 @@
  */
 function autologout_settings() {
   $form = array();
-  $timeout = variable_get('autologout_timeout', 1800);
+  $timeout = config_get('autologout.settings','autologout_timeout');
 
   if (module_exists('jstimer')) {
     if (!module_exists('jst_timer')) {
       backdrop_set_message(t('The "Widget: timer" module must also be enabled for the dynamic countdown to work in the automated logout block.'), 'error');
     }
 
-    if (variable_get('jstimer_js_load_option', 0) != 1) {
+    if (config_get('autologout.settings','jstimer_js_load_option') != 1) {
       backdrop_set_message(t("The Javascript timer module's 'Javascript load options' setting should be set to 'Every page' for the dynamic countdown to work in the automated logout block."), 'error');
     }
   }
@@ -34,7 +34,7 @@ function autologout_settings() {
   $form['autologout_max_timeout'] = array(
     '#type' => 'textfield',
     '#title' => t('Max timeout setting'),
-    '#default_value' => variable_get('autologout_max_timeout', '172800'),
+    '#default_value' => config_get('autologout.settings','autologout_max_timeout'),
     '#size' => 10,
     '#maxlength' => 12,
     '#weight' => -8,
@@ -44,7 +44,7 @@ function autologout_settings() {
   $form['autologout_padding'] = array(
     '#type' => 'textfield',
     '#title' => t('Timeout padding'),
-    '#default_value' => variable_get('autologout_padding', 10),
+    '#default_value' => config_get('autologout.settings','autologout_padding'),
     '#size' => 8,
     '#weight' => -6,
     '#description' => t('How many seconds to give a user to respond to the logout dialog before ending their session.'),
@@ -53,7 +53,7 @@ function autologout_settings() {
   $form['autologout_role_logout'] = array(
     '#type' => 'checkbox',
     '#title' => t('Role Timeout'),
-    '#default_value' => variable_get('autologout_role_logout', FALSE),
+    '#default_value' => config_get('autologout.settings','autologout_role_logout'),
     '#weight' => -4,
     '#description' => t('Enable each role to have its own timeout threshold, a refresh maybe required for changes to take effect. Any role not ticked will use the default timeout value. Any role can have a value of 0 which means that they will never be logged out.'),
   );
@@ -61,7 +61,7 @@ function autologout_settings() {
   $form['autologout_redirect_url']  = array(
     '#type' => 'textfield',
     '#title' => t('Redirect URL at logout'),
-    '#default_value' => variable_get('autologout_redirect_url', 'user/login'),
+    '#default_value' => config_get('autologout.settings','autologout_redirect_url'),
     '#size' => 40,
     '#description' => t('Send users to this internal page when they are logged out.'),
   );
@@ -69,21 +69,21 @@ function autologout_settings() {
   $form['autologout_no_dialog'] = array(
     '#type' => 'checkbox',
     '#title' => t('Do not display the logout dialog'),
-    '#default_value' => variable_get('autologout_no_dialog', FALSE),
+    '#default_value' => config_get('autologout.settings','autologout_no_dialog'),
     '#description' => t('Enable this if you want users to logout right away and skip displaying the logout dialog.'),
   );
 
   $form['autologout_use_alt_logout_method'] = array(
     '#type' => 'checkbox',
     '#title' => t('Use alternate logout method'),
-    '#default_value' => variable_get('autologout_use_alt_logout_method', FALSE),
+    '#default_value' => config_get('autologout.settings','autologout_use_alt_logout_method'),
     '#description' => t('Normally when auto logout is triggered, it is done via an AJAX service call. Sites that use an SSO provider, such as CAS, are likely to see this request fail with the error "Origin is not allowed by Access-Control-Allow-Origin". The alternate appraoch is to have the auto logout trigger a page redirect to initiate the logout process instead.'),
   ); 
 
   $form['autologout_message']  = array(
     '#type' => 'textarea',
     '#title' => t('Message to display in the logout dialog'),
-    '#default_value' => variable_get('autologout_message', 'Your session is about to expire. Do you want to reset it?'),
+    '#default_value' => config_get('autologout.settings','autologout_message'),
     '#size' => 40,
     '#description' => t('This message must be plain text as it might appear in a JavaScript confirm dialog.'),
   );
@@ -91,7 +91,7 @@ function autologout_settings() {
   $form['autologout_inactivity_message']  = array(
     '#type' => 'textarea',
     '#title' => t('Message to display to the user after they are logged out.'),
-    '#default_value' => variable_get('autologout_inactivity_message', 'You have been logged out due to inactivity.'),
+    '#default_value' => config_get('autologout.settings','autologout_inactivity_message'),
     '#size' => 40,
     '#description' => t('This message is displayed after the user was logged out due to inactivity. You can leave this blank to show no message to the user.'),
   );
@@ -99,14 +99,14 @@ function autologout_settings() {
   $form['autologout_use_watchdog'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable watchdog Automated Logout logging'),
-    '#default_value' => variable_get('autologout_use_watchdog', ''),
+    '#default_value' => config_get('autologout.settings','autologout_use_watchdog'),
     '#description' => t('Enable logging of automatically logged out users'),
   );
 
   $form['autologout_enforce_admin'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enforce auto logout on admin pages'),
-    '#default_value' => variable_get('autologout_enforce_admin', FALSE),
+    '#default_value' => config_get('autologout.settings','autologout_enforce_admin'),
     '#description' => t('If checked, then users will be automatically logged out when administering the site.'),
   );
 
@@ -114,7 +114,7 @@ function autologout_settings() {
     $form['autologout_jstimer_format']  = array(
       '#type' => 'textfield',
       '#title' => t('Autologout block time format'),
-      '#default_value' => variable_get('autologout_jstimer_format', '%hours%:%mins%:%secs%'),
+      '#default_value' => config_get('autologout.settings','autologout_jstimer_format'),
       '#description' => t('Change the display of the dynamic timer.  Available replacement values are: %day%, %month%, %year%, %dow%, %moy%, %years%, %ydays%, %days%, %hours%, %mins%, and %secs%.'),
     );
   }
@@ -130,7 +130,7 @@ function autologout_settings() {
 
     $form['table']['autologout_roles']['autologout_role_' . $key . '_timeout'] = array(
       '#type' => 'textfield',
-      '#default_value' => variable_get('autologout_role_' . $key . '_timeout', $timeout),
+      '#default_value' => config_get('autologout.settings','autologout_role_' . $key . '_timeout'),
       '#size' => 8,
       '#theme' => 'textfield',
     );
@@ -140,12 +140,19 @@ function autologout_settings() {
   foreach (user_roles(TRUE) as $key => $role) {
     $form['table']['autologout_roles']['autologout_role_' . $key] = array(
       '#type' => 'checkbox',
-      '#default_value' => variable_get('autologout_role_' . $key, FALSE),
+      '#default_value' => config_get('autologout.settings','autologout_role_' . $key),
       '#theme' => 'checkbox',
     );
   }
 
-  return system_settings_form($form);
+  // Add a submit button
+  $form['actions']['#type'] = 'actions';
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+  );
+
+  return $form;
 }
 
 /**
@@ -175,4 +182,27 @@ function autologout_settings_validate($form, &$form_state) {
   if (!is_numeric($timeout) || ((int) $timeout != $timeout) || $timeout < 60 || $timeout > $max_timeout) {
     form_set_error('autologout_timeout', t('The timeout must be an integer greater than 60 and less then %max.', array('%max' => $max_timeout)));
   }
+}
+
+
+/**
+ * Submit handler for module_settings_form().
+ */
+function autologout_settings_submit($form, &$form_state){
+  $config = config('autologout.settings');
+  $config->set('autologout_timeout', $form_state['values']['autologout_timeout']);
+  $config->set('autologout_max_timeout', $form_state['values']['autologout_max_timeout']);
+  $config->set('autologout_padding', $form_state['values']['autologout_padding']);
+  $config->set('autologout_role_logout', $form_state['values']['autologout_role_logout']);
+  $config->set('autologout_redirect_url', $form_state['values']['autologout_redirect_url']);
+  $config->set('autologout_no_dialog', $form_state['values']['autologout_no_dialog']);
+  $config->set('autologout_use_alt_logout_method', $form_state['values']['autologout_use_alt_logout_method']);
+  $config->set('autologout_message', $form_state['values']['autologout_message']);
+  $config->set('autologout_inactivity_message', $form_state['values']['autologout_inactivity_message']);
+  $config->set('autologout_use_watchdog', $form_state['values']['autologout_use_watchdog']);
+  $config->set('autologout_enforce_admin', $form_state['values']['autologout_enforce_admin']);
+  $config->set('autologout_jstimer_format', $form_state['values']['autologout_jstimer_format']);
+  $config->set('autologout_role', $form_state['values']['autologout_role']);
+  $config->save();
+
 }

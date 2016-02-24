@@ -99,7 +99,7 @@ function autologout_block_view($delta = '') {
     $block['content'] = array(backdrop_get_form('autologout_create_block_form'));
   }
   else {
-    $timeout = (int) variable_get('autologout_timeout', 1800);
+    $timeout = (int) config_get('autologout.settings','autologout_timeout');
     $block['content'] = t('You will be logged out in !time if this page is not refreshed before then.', array('!time' => format_interval($timeout)));
   }
 
@@ -139,7 +139,7 @@ function autologout_create_block_form() {
  */
 function autologout_create_timer() {
   $time_remaining = _autologout_get_remaining_time();
-  $timeformat = filter_xss_admin(variable_get('autologout_jstimer_format', '%hours%:%mins%:%secs%'));
+  $timeformat = filter_xss_admin(config_get('autologout.settings','autologout_jstimer_format'));
 
   return theme('autologout_block', array(
     'time_remaining' => $time_remaining,
@@ -157,7 +157,7 @@ function autologout_block_configure($delta = '') {
       backdrop_set_message(t('The "Widget: timer" module must also be enabled for the dynamic countdown to work in the automated logout block.'), 'error');
     }
 
-    if (variable_get('jstimer_js_load_option', 0) != 1) {
+    if (config_get('autologout.settings','jstimer_js_load_option') != 1) {
       backdrop_set_message(t("The Javascript timer module's 'Javascript load options' setting should be set to 'Every page' for the dynamic countdown to work in the automated logout block."), 'error');
     }
   }
@@ -258,7 +258,7 @@ function autologout_timeout_validate($timeout, $max_timeout = NULL) {
   $validate = FALSE;
 
   if (is_null($max_timeout)) {
-    $max_timeout = variable_get('autologout_max_timeout', '172800');
+    $max_timeout = config_get('autologout.settings','autologout_max_timeout');
   }
 
   if (!is_numeric($timeout) || $timeout < 0 || ($timeout > 0 && $timeout < 60) || $timeout > $max_timeout) {
@@ -297,7 +297,7 @@ function autologout_form_user_profile_form_alter(&$form, $form_state) {
     $form['autologout_user_' . $userid] = array(
       '#type' => 'textfield',
       '#title' => t('Your current logout threshold'),
-      '#default_value' => variable_get('autologout_user_' . $userid, ""),
+      '#default_value' => config_get('autologout.settings','autologout_user_' . $userid),
       '#size' => 8,
       '#description' => t('How many seconds to give a user to respond to the logout dialog before ending their session.'),
       '#element_validate' => array('_autologout_user_uid_timeout_validate'),
@@ -311,7 +311,7 @@ function autologout_form_user_profile_form_alter(&$form, $form_state) {
  * Form validation.
  */
 function _autologout_user_uid_timeout_validate($element, &$form_state) {
-  $max_timeout = variable_get('autologout_max_timeout', 172800);
+  $max_timeout = config_get('autologout.settings','autologout_max_timeout');
   $timeout = $element['#value'];
 
   // Set error if it has a value that isn't strictly a number between 60 and max.
@@ -342,7 +342,7 @@ function autologout_user_profile_submit(&$form, &$form_state) {
       variable_del('autologout_user_' . $userid);
     }
     else {
-      variable_set('autologout_user_' . $userid, $val);
+      config_set('autologout.settings','autologout_user_' . $userid, $val);
     }
   }
 }
@@ -372,21 +372,21 @@ function autologout_init() {
 
   $now = time();
   $timeout = _autologout_get_user_timeout();
-  $timeout_padding = variable_get('autologout_padding', 10);
-  $redirect_url = variable_get('autologout_redirect_url', 'user/login');
+  $timeout_padding = config_get('autologout.settings','autologout_padding');
+  $redirect_url = config_get('autologout.settings','autologout_redirect_url');
   $redirect_query = backdrop_get_destination() + array('autologout_timeout' => 1);
-  $no_dialog = variable_get('autologout_no_dialog', FALSE);
-  $use_alt_logout_method = variable_get('autologout_use_alt_logout_method', FALSE);
+  $no_dialog = config_get('autologout.settings','autologout_no_dialog');
+  $use_alt_logout_method = config_get('autologout.settings','autologout_use_alt_logout_method');
   backdrop_add_library('system', 'ui.dialog');
 
   // Get all settings JS will need for dialog.
-  $msg = t(variable_get('autologout_message', 'Your session is about to expire. Do you want to reset it?'));
+  $msg = t(config_get('autologout.settings','autologout_message'));
   $settings = array(
     'timeout' => $refresh_only ? ($timeout * 500) : ($timeout * 1000),
     'timeout_padding' => $timeout_padding * 1000,
     'message' => $msg,
     'redirect_url' => url($redirect_url, array('query' => $redirect_query)),
-    'title' => t('@name Alert', array('@name' => variable_get('site_name', 'Backdrop'))),
+    'title' => t('@name Alert', array('@name' => config_get('autologout.settings','site_name'))),
     'refresh_only' => $refresh_only,
     'no_dialog' => $no_dialog,
     'use_alt_logout_method' => $use_alt_logout_method,
@@ -462,7 +462,7 @@ function autologout_autologout_prevent() {
  */
 function autologout_autologout_refresh_only() {
   // Check to see if an open admin page will keep login alive.
-  if (!variable_get('autologout_enforce_admin', FALSE) && path_is_admin(current_path())) {
+  if (!config_get('autologout.settings','autologout_enforce_admin') && path_is_admin(current_path())) {
     return TRUE;
   }
 }
@@ -524,10 +524,9 @@ function autologout_ahah_logout($type = 'ajax') {
   _autologout_logout();
 
   if ($type !== 'ajax') {
-    $redirect_url = variable_get('autologout_redirect_url', 'user/login');
+    $redirect_url = config_get('autologout.settings','autologout_redirect_url');
     backdrop_goto($redirect_url);
   }
-
   backdrop_exit();
 }
 
@@ -547,14 +546,14 @@ function _autologout_get_remaining_time() {
  * Go through every role to get timeout value, default is the global timeout.
  */
 function _autologout_get_role_timeout() {
-  $default_timeout = variable_get('autologout_timeout', 1800);
+  $default_timeout = config_get('autologout.settings','autologout_timeout');
   $roles = user_roles(TRUE);
   $role_timeout = array();
 
   // Go through roles, get timeouts for each and return as array.
   foreach ($roles as $rid => $role) {
-    if (variable_get('autologout_role_' . $rid, FALSE)) {
-      $timeout_role = variable_get('autologout_role_' . $rid . '_timeout', $default_timeout);
+    if (config_get('autologout.settings','autologout_role_' . $rid)) {
+      $timeout_role = config_get('autologout.settings','autologout_role_' . $rid . '_timeout');
       $role_timeout[$rid] = $timeout_role;
     }
   }
@@ -588,14 +587,14 @@ function _autologout_get_user_timeout($uid = NULL) {
     return 0;
   }
 
-  if (is_numeric($user_timeout = variable_get('autologout_user_' . $user->uid, FALSE))) {
+  if (is_numeric($user_timeout = config_get('autologout.settings','autologout_user_' . $user->uid))) {
     // User timeout takes precedence.
     backdrop_alter('autologout_timeout', $user_timeout);
     return $user_timeout;
   }
 
   // Get role timeouts for user.
-  if (variable_get('autologout_role_logout', FALSE)) {
+  if (config_get('autologout.settings','autologout_role_logout')) {
     $user_roles = $user->roles;
     $output = array();
     $timeouts = _autologout_get_role_timeout();
@@ -616,7 +615,7 @@ function _autologout_get_user_timeout($uid = NULL) {
   }
 
   // If no user or role override exists, return the default timeout.
-  $timeout = variable_get('autologout_timeout', 1800);
+  $timeout = config_get('autologout.settings','autologout_timeout');
   backdrop_alter('autologout_timeout', $timeout);
   return $timeout;
 }
@@ -627,7 +626,7 @@ function _autologout_get_user_timeout($uid = NULL) {
 function _autologout_logout() {
   global $user;
 
-  if (variable_get('autologout_use_watchdog', FALSE)) {
+  if (config_get('autologout.settings','autologout_use_watchdog')) {
     watchdog('user', 'Session automatically closed for %name by autologout.', array('%name' => $user->name));
   }
 
@@ -643,9 +642,9 @@ function _autologout_logout() {
  * Helper to determine if a given user should be autologged out.
  */
 function _autologout_logout_role($user) {
-  if (variable_get('autologout_role_logout', FALSE)) {
+  if (config_get('autologout.settings','autologout_role_logout')) {
     foreach ($user->roles as $key => $role) {
-      if (variable_get('autologout_role_' . $key, FALSE)) {
+      if (config_get('autologout.settings','autologout_role_' . $key)) {
         return TRUE;
       }
     }
@@ -658,7 +657,7 @@ function _autologout_logout_role($user) {
  * Display the inactivity message if required.
  */
 function _autologout_inactivity_message() {
-  $message = variable_get('autologout_inactivity_message', 'You have been logged out due to inactivity.');
+  $message = config_get('autologout.settings','autologout_inactivity_message');
   backdrop_alter('autologout_message', $message);
   if (!empty($message)) {
     backdrop_set_message($message);
@@ -718,7 +717,7 @@ function autologout_user_login(&$edit, $account) {
     return;
   }
 
-  $timeout_padding = variable_get('autologout_padding', 10);
+  $timeout_padding = config_get('autologout.settings','autologout_padding');
   $timestamp = time() - ($timeout + $timeout_padding);
 
   // Find all stale sessions.
@@ -741,3 +740,28 @@ function autologout_user_login(&$edit, $account) {
       ->execute();
   }
 }
+
+
+/**
+ * Implements hook_config_info().
+ */
+function autologout_config_info(){
+  $prefixes['autologout.settings'] = array(
+    'label' => t('Autologout settings'),
+    'group' => t('Configuration'),
+  );
+  return $prefixes;
+}
+
+/**
+ * Implements hook_autoload_info().
+ */
+function autologout_autoload_info(){
+  return array(
+    'AutologoutTestSessionCleanupOnLogin' => 'tests/autologout.test',
+    'AutologoutTestCase' => 'tests/autologout.test',
+    'AutologoutAjaxTestCase' => 'tests/autologout.test',
+    'AutoLogoutByRoleTestCase' => 'tests/autologout.test',
+  );
+}
+

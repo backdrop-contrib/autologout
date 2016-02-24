@@ -1,87 +1,54 @@
 <?php
 
 /**
- * @file
- * Install file for JS Logout Module
+ * Move views_send settings from variables to config.
  */
+function autologout_update_1000(){
+  $config = config('autologout.settings');
+  $config->set('autologout_timeout', update_variable_get('autologout_timeout', 1800));
+  $config->set('jstimer_js_load_option', update_variable_get('jstimer_js_load_option', 0));
+  $config->set('autologout_max_timeout', update_variable_get('autologout_max_timeout', 172800));
+  $config->set('autologout_padding', update_variable_get('autologout_padding', 1800));
+  $config->set('autologout_role_logout', update_variable_get('autologout_role_logout', FALSE));
+  $config->set('autologout_redirect_url', update_variable_get('autologout_redirect_url','user/login'));
 
-/**
- * Implements hook_uninstall().
- */
-function autologout_uninstall() {
-  variable_del('autologout_timeout');
-  variable_del('autologout_use_watchdog');
-  variable_del('autologout_redirect_url');
-  variable_del('autologout_message');
-  variable_del('autologout_inactivity_message');
-  variable_del('autologout_padding');
-  variable_del('autologout_enforce_admin');
-  variable_del('autologout_role_logout');
-  variable_del('autologout_max_timeout');
-  variable_del('autologout_no_dialog');
+  $config->set('autologout_no_dialog', update_variable_get('autologout_no_dialog',FALSE));
+  $config->set('autologout_use_alt_logout_method', update_variable_get('autologout_use_alt_logout_method', FALSE));
+  $config->set('autologout_message', update_variable_get('autologout_message', 'Your session is about to expire. Do you want to reset it?'));
+  $config->set('autologout_inactivity_message', update_variable_get('autologout_inactivity_message', 'You have been logged out due to inactivity.'));
+  $config->set('autologout_use_watchdog', update_variable_get('autologout_use_watchdog', ''));
+  $config->set('autologout_enforce_admin', update_variable_get('autologout_enforce_admin',FALSE));
 
-  foreach (user_roles(TRUE) as $key => $role) {
-    variable_del('autologout_role_' . $key);
-    variable_del('autologout_role_' . $key . '_timeout');
+  $config->set('autologout_jstimer_format', update_variable_get('autologout_jstimer_format', '%hours%:%mins%:%secs%'));
+  $config->set('autologout_role_', update_variable_get('autologout_role_', ''));
+  $config->set('autologout_enabled', update_variable_get('autologout_enabled', ''));
+  $config->set('autologout_user_', update_variable_get('autologout_user_',FALSE));
+  $config->save();
 
-  }
+  // Delete variables.
+  update_variable_del('autologout_no_dialog');
+  update_variable_del('autologout_use_alt_logout_method');
+  update_variable_del('autologout_max_timeout');
+  update_variable_del('autologout_padding');
+  update_variable_del('autologout_role_logout');
+  update_variable_del('autologout_redirect_url');
 
-  $uids = array();
-  // Remove all timeouts for individual users.
-  $result = db_query("SELECT DISTINCT(uid) FROM {users}")->fetchAll();
-  foreach ($result as $uid) {
-    $uid  = $uid -> uid;
-    variable_del('autologout_user_' . $uid);
-  }
+  update_variable_del('autologout_timeout');
+  update_variable_del('jstimer_js_load_option');
+  update_variable_del('autologout_message');
+  update_variable_del('autologout_inactivity_message');
+  update_variable_del('autologout_use_watchdog');
+  update_variable_del('autologout_enforce_admin');
+
+  update_variable_del('autologout_jstimer_format');
+  update_variable_del('autologout_role_');
+  update_variable_del('autologout_enabled');
+  update_variable_del('autologout_user_');
 }
 
 /**
- * Upgrade autologout 2.x series to 4.x series.
+ * Implements hook_update_last_removed().
  */
-function autologout_update_7400() {
-  $old_settings = variable_get('autologout', FALSE);
-
-  if (!empty($old_settings)) {
-    if (!empty($old_settings['enabled'])) {
-      variable_set('autologout_enabled', $old_settings['enabled']);
-    }
-
-    if (!empty($old_settings['timeout'])) {
-      variable_set('autologout_timeout', $old_settings['timeout']);
-    }
-
-    if (!empty($old_settings['use_watchdog'])) {
-      variable_set('autologout_use_watchdog', $old_settings['use_watchdog']);
-    }
-
-    if (!empty($old_settings['logout_message'])) {
-      variable_set('autologout_message', $old_settings['logout_message']);
-    }
-
-    if (!empty($old_settings['redirect_url'])) {
-      variable_set('autologout_redirect_url', $old_settings['redirect_url']);
-    }
-
-    if (!empty($old_settings['refresh_delta']) && $old_settings['refresh_delta'] >= 0) {
-      variable_set('autologout_padding', $old_settings['refresh_delta']);
-    }
-  }
-
-  // Delete the autologout table.
-  if (db_table_exists('autologout')) {
-    // This functionality no longer exists.
-    db_drop_table('autologout');
-  }
-
-  backdrop_flush_all_caches();
-}
-
-/**
- * Fix permission names in role_permission table
- */
-function autologout_update_7401() {
-  db_update('role_permission')
-    ->fields(array('permission' => 'administer autologout'))
-    ->condition('permission', 'auto administer autologout', '=')
-    ->execute();
+function autologout_update_last_removed() {
+  return 7401;
 }
