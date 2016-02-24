@@ -1,6 +1,6 @@
 # Automated Logout
 
-This module provides a site administrator the ability to log users
+This module provides a site administrator with the ability to log users
 out after a specified time of inactivity. It is highly customisable
 and includes "site policies" by role to enforce logout.
 
@@ -40,7 +40,8 @@ This is a port from the Drupal module of the same name, v7.x-4.4
 
 See readme.txt for more information about installation and use.
 
-Checkout this blog post from Lullabot Module Monday: Auto Logout
+Checkout this blog post from Lullabot "Module Monday: Auto Logout"
+http://www.lullabot.com/blog/article/module-monday-auto-logout
 
 
 ## License
