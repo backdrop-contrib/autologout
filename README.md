@@ -13,6 +13,15 @@ server side logout if js is disable or bypassed.
 
 This is a port from the Drupal module of the same name, v7.x-4.4
 
+
+## Status
+
+This initial release for Backdrop (1.x-4.4.0) can be installed and
+will automatically log-out a user after the prescribed interval.
+However, it has not yet been fully tested and it is not passing
+all its inbuilt tests. please report any issues you may find.
+
+
 ## Features
 
   + Different timeouts based on role
