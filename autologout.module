@@ -288,7 +288,7 @@ function autologout_form_user_profile_form_alter(&$form, $form_state) {
   $access = FALSE;
 
   // If user has access to change, and they are changing their own and only
-  // thier own timeout. Or they are an admin.
+  // their own timeout. Or they are an admin.
   if ((user_access('change own logout threshold') && $current_uid == $userid) || user_access('administer autologout')) {
     $access = TRUE;
   }
@@ -552,8 +552,8 @@ function _autologout_get_role_timeout() {
 
   // Go through roles, get timeouts for each and return as array.
   foreach ($roles as $rid => $role) {
-    if (config_get('autologout.settings','autologout_role_' . $rid)) {
-      $timeout_role = config_get('autologout.settings','autologout_role_' . $rid . '_timeout');
+    if (config_get('autologout.settings','autologout_role.' . $rid . '.active') == 1) {
+      $timeout_role = config_get('autologout.settings','autologout_role.' . $rid . '.timeout');
       $role_timeout[$rid] = $timeout_role;
     }
   }
@@ -644,7 +644,7 @@ function _autologout_logout() {
 function _autologout_logout_role($user) {
   if (config_get('autologout.settings','autologout_role_logout')) {
     foreach ($user->roles as $key => $role) {
-      if (config_get('autologout.settings','autologout_role_' . $key)) {
+      if (config_get('autologout.settings','autologout_role.' . $key . '.active')) {
         return TRUE;
       }
     }
@@ -740,6 +740,35 @@ function autologout_user_login(&$edit, $account) {
       ->execute();
   }
 }
+
+
+/**
+ * New for Backdrop.
+ * Refresh config with timeout values of current roles.
+ * Go through every role to set timeout value, default is the global timeout.
+ */
+function autologout_set_role_timeout() {
+  $default_timeout = config_get('autologout.settings','autologout_timeout');
+  $roles = user_roles(TRUE);
+	$role_timeout = array();
+
+  // Go through roles, get timeouts for each if already set or use default.
+	foreach ($roles as $rid => $role) {
+		// set defaults
+		$role_timeout[$rid]['active'] = 0;
+		$role_timeout[$rid]['timeout'] = $default_timeout;
+    if (config_get('autologout.settings','autologout_role.' . $rid . '.active') == 1) {
+			// re-use current settings
+		  $role_timeout[$rid]['active'] = 1;
+		  $role_timeout[$rid]['timeout'] = config_get('autologout.settings','autologout_role.' . $rid . '.timeout');
+    }
+	}
+	// overwrite config settings with fresh version
+	config_set('autologout.settings','autologout_role',$role_timeout);
+
+return;
+}
+
 
 
 /**
