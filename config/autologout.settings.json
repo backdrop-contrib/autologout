@@ -1,17 +1,27 @@
 {
   "_config_name": "autologout.settings",
-  "autologout_timeout":1800,
+  "autologout_timeout":3600,
   "jstimer_js_load_option":0,
   "autologout_max_timeout":172800,
   "autologout_padding":10,
-  "autologout_role_logout":false,
   "autologout_redirect_url":"user/login",
-  "autologout_no_dialog":false,
-  "autologout_use_alt_logout_method":false,
+  "autologout_no_dialog":0,
+  "autologout_use_alt_logout_method":0,
   "autologout_message":"Your session is about to expire. Do you want to reset it?",
   "autologout_inactivity_message":"You have been logged out due to inactivity.",
-  "autologout_use_watchdog":"",
-  "autologout_enforce_admin":false,
+  "autologout_use_watchdog":1,
+  "autologout_enforce_admin":0,
   "autologout_jstimer_format":"%hours%:%mins%:%secs%",
-  "autologout_enabled":""
+  "autologout_enabled":0,
+	"autologout_role_logout":0,
+  "autologout_role": {
+	  "administrator": {
+      "active": 0,
+      "timeout": 7200
+    },
+    "authenticated": {
+      "active": 0,
+      "timeout": 7200
+    }
+  }
 }

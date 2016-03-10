@@ -9,6 +9,9 @@
  * Settings form for menu callback
  */
 function autologout_settings() {
+  // set config for each role.
+	autologout_set_role_timeout();
+
   $form = array();
   $timeout = config_get('autologout.settings','autologout_timeout');
 
@@ -130,7 +133,7 @@ function autologout_settings() {
 
     $form['table']['autologout_roles']['autologout_role_' . $key . '_timeout'] = array(
       '#type' => 'textfield',
-      '#default_value' => config_get('autologout.settings','autologout_role_' . $key . '_timeout'),
+      '#default_value' => config_get('autologout.settings','autologout_role.' . $key . '.timeout'),
       '#size' => 8,
       '#theme' => 'textfield',
     );
@@ -140,7 +143,7 @@ function autologout_settings() {
   foreach (user_roles(TRUE) as $key => $role) {
     $form['table']['autologout_roles']['autologout_role_' . $key] = array(
       '#type' => 'checkbox',
-      '#default_value' => config_get('autologout.settings','autologout_role_' . $key),
+      '#default_value' => config_get('autologout.settings','autologout_role.' . $key . '.active'),
       '#theme' => 'checkbox',
     );
   }
@@ -201,8 +204,16 @@ function autologout_settings_submit($form, &$form_state){
   $config->set('autologout_inactivity_message', $form_state['values']['autologout_inactivity_message']);
   $config->set('autologout_use_watchdog', $form_state['values']['autologout_use_watchdog']);
   $config->set('autologout_enforce_admin', $form_state['values']['autologout_enforce_admin']);
-  $config->set('autologout_jstimer_format', $form_state['values']['autologout_jstimer_format']);
-  $config->set('autologout_role', $form_state['values']['autologout_role']);
   $config->save();
 
+	if (module_exists('jstimer') && module_exists('jst_timer')) {
+	  $config_set('autologout.settings','autologout_jstimer_format', $form_state['values']['autologout_jstimer_format']);
+	}
+
+	// For each role, update config setting
+	$roles = user_roles(TRUE);
+  foreach ($roles as $rid => $role) {
+	  config_set('autologout.settings','autologout_role.' . $rid . '.active',$form_state['values']["autologout_role_" . $rid]);
+	  config_set('autologout.settings','autologout_role.' . $rid . '.timeout', $form_state['values']["autologout_role_" . $rid . "_timeout"]);
+  }
 }
