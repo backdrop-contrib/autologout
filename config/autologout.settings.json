@@ -13,14 +13,20 @@
   "autologout_enforce_admin":0,
   "autologout_jstimer_format":"%hours%:%mins%:%secs%",
   "autologout_enabled":0,
-	"autologout_role_logout":0,
+  "autologout_role_logout":0,
   "autologout_role": {
-	  "administrator": {
+    "administrator": {
       "active": 0,
       "timeout": 7200
     },
     "authenticated": {
       "active": 0,
+      "timeout": 7200
+    }
+  },
+  "autologout_user": {
+    "1": {
+      "padding": 10,
       "timeout": 7200
     }
   }

@@ -1,14 +1,56 @@
 <?php
+/**
+ * @file
+ * Auto logout install file.
+ */
+
+function user_names(){
+  // get a list of registered users
+  $result = db_select('users','u')
+	->fields('u', array('uid', 'name'))
+	->condition('uid',0,'>')
+  ->execute();
+
+  $users = $result->fetchAllAssoc('uid', PDO::FETCH_ASSOC);
+	return $users;
+}
+
+/**
+ * Implements hook_enable().
+ */
+function autologout_enable() {
+/**
+ * Set autologout default timeout and padding values for each user.
+ */
+  $users = user_names();
+  foreach ($users as $uid => $name) {
+	  config_set('autologout.settings','autologout_user.' . $uid . '.padding', 10);
+	  config_set('autologout.settings','autologout_user.' . $uid . '.timeout', 1800);
+  }
+
+  // default settings for each role
+
+  $roles = user_roles(TRUE);
+  foreach ($roles as $rid => $role) {
+	  config_set('autologout.settings','autologout_role.' . $rid . '.active', 0);
+	  config_set('autologout.settings','autologout_role.' . $rid . '.timeout', 1800);
+  }
+}
+
+/**
+ * Implements hook_install().
+ */
+
+function autologout_update_1000(){
 
 /**
  * Move views_send settings from variables to config.
  */
-function autologout_update_1000(){
   $config = config('autologout.settings');
   $config->set('autologout_timeout', update_variable_get('autologout_timeout', 1800));
   $config->set('jstimer_js_load_option', update_variable_get('jstimer_js_load_option', 0));
   $config->set('autologout_max_timeout', update_variable_get('autologout_max_timeout', 172800));
-  $config->set('autologout_padding', update_variable_get('autologout_padding', 1800));
+  $config->set('autologout_padding', update_variable_get('autologout_padding', 10));
   $config->set('autologout_redirect_url', update_variable_get('autologout_redirect_url','user/login'));
   $config->set('autologout_no_dialog', update_variable_get('autologout_no_dialog',FALSE));
   $config->set('autologout_use_alt_logout_method', update_variable_get('autologout_use_alt_logout_method', FALSE));
@@ -19,7 +61,6 @@ function autologout_update_1000(){
   $config->set('autologout_jstimer_format', update_variable_get('autologout_jstimer_format', '%hours%:%mins%:%secs%'));
   $config->set('autologout_enabled', update_variable_get('autologout_enabled', ''));
 	$config->set('autologout_role_logout', update_variable_get('autologout_role_logout', FALSE));
-  $config->set('autologout_user_', update_variable_get('autologout_user_',FALSE));
   $config->save();
 
 	// settings for each role
@@ -31,6 +72,14 @@ function autologout_update_1000(){
 		update_variable_del('autologout_role_' . $rid . '_timeout');
   }
 
+  // re-use any previous values for each user's padding
+  $users = user_names();
+	foreach ($users as $uid => $name) {
+	  if(update_variable_get('autologout_user_' . $uid)){
+	    config_set('autologout.settings','autologout_user.' . $uid . '.padding', update_variable_get('autologout_user_' . $uid, 10));
+		  update_variable_del('autologout_role_' . $uid);
+		}
+  }
 
   // Delete variables.
   update_variable_del('autologout_no_dialog');

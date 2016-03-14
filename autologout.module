@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Used to automagically log out a user after a preset time.
+ * Used to automatically log out a user after a preset time.
  */
 
 /**
@@ -10,9 +10,9 @@
  */
 function autologout_permission() {
   return array(
-    'change own logout threshold' => array(
-      'title' => t('Change own logout threshold'),
-      'description' => t('Selected users will be able to edit their own logout threshold.'),
+    'change own logout timeouts' => array(
+      'title' => t('Change own logout timeouts'),
+      'description' => t('Selected users will be able to edit their own session duration and logout threshold.'),
     ),
     'administer autologout'  => array(
       'title' => t('Administer Autologout'),
@@ -277,10 +277,6 @@ function autologout_timeout_validate($timeout, $max_timeout = NULL) {
  * Adds a field to user/edit to change that users logout.
  */
 function autologout_form_user_profile_form_alter(&$form, $form_state) {
-  if ($form['#user_category'] != 'account') {
-    // Only include the timeout on main user profile.
-    return;
-  }
 
   global $user;
   $current_uid = $user->uid;
@@ -289,19 +285,35 @@ function autologout_form_user_profile_form_alter(&$form, $form_state) {
 
   // If user has access to change, and they are changing their own and only
   // their own timeout. Or they are an admin.
-  if ((user_access('change own logout threshold') && $current_uid == $userid) || user_access('administer autologout')) {
-    $access = TRUE;
-  }
 
-  if ($access) {
+
+	if (!empty($form['#user']) && (config_get('autologout.settings','autologout_user_logout') == 1)) {
+    $account = $form['#user'];
     $form['autologout_user_' . $userid] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Autologout settings'),
+      '#weight' => 5,
+      '#collapsible' => TRUE,
+      '#access' => user_access('change own logout timeouts'),
+    );
+
+		$form['autologout_user_' . $userid]['timeout'] = array(
       '#type' => 'textfield',
-      '#title' => t('Your current logout threshold'),
-      '#default_value' => config_get('autologout.settings','autologout_user_' . $userid),
+      '#title' => t('Your current user timout'),
+      '#default_value' => config_get('autologout.settings','autologout_user.' . $userid . '.timeout'),
       '#size' => 8,
-      '#description' => t('How many seconds to give a user to respond to the logout dialog before ending their session.'),
+      '#description' => t('The duration of your session'),
       '#element_validate' => array('_autologout_user_uid_timeout_validate'),
     );
+
+    $form['autologout_user_' . $userid]['threshold'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Your current logout threshold'),
+      '#default_value' => config_get('autologout.settings','autologout_user.' . $userid . '.padding'),
+      '#size' => 8,
+      '#description' => t('How many seconds you have to respond to the logout dialog before ending your session. The threshold must be an integer greater than 4, and less then 300.'),
+      '#element_validate' => array('_autologout_user_uid_padding_validate'),
+		);
 
     $form['#submit'][] = 'autologout_user_profile_submit';
   }
@@ -320,8 +332,18 @@ function _autologout_user_uid_timeout_validate($element, &$form_state) {
   }
 }
 
+function _autologout_user_uid_padding_validate($element, &$form_state) {
+  $max_timeout = config_get('autologout.settings','autologout_max_padding');
+  $timeout = $element['#value'];
+
+  // Set error if it has a value that isn't strictly a number between 5 and max.
+  if ($timeout != "" && ($timeout < 5 || $timeout > $max_timeout || !is_numeric($timeout))) {
+    form_error($element, t('The threshold must be an integer greater than 4, and less then %max.', array('%max' => $max_timeout)));
+  }
+}
+
 /**
- * Handle submission of timeout threshold in user/edit.
+ * Handle submission of timeout and threshold (padding) in user/edit.
  */
 function autologout_user_profile_submit(&$form, &$form_state) {
   global $user;
@@ -329,21 +351,17 @@ function autologout_user_profile_submit(&$form, &$form_state) {
   $userid = $form_state['user']->uid;
   $access = FALSE;
 
-  if ((user_access('change own logout threshold') && $current_uid == $userid) || user_access('administer autologout')) {
+  if ((user_access('change own logout timeouts') && $current_uid == $userid) || user_access('administer autologout')) {
     $access = TRUE;
   }
-
   // Access is reused here as a security measure. Not only will the element not
   // display but wont submit without access.
   if ($access) {
     $userid = $form_state['user'] -> uid;
-    $val = trim($form_state['values']['autologout_user_' . $userid]);
-    if (empty($val)) {
-      variable_del('autologout_user_' . $userid);
-    }
-    else {
-      config_set('autologout.settings','autologout_user_' . $userid, $val);
-    }
+    $val = trim($form_state['values']['threshold']);
+		$timeout = trim($form_state['values']['timeout']);
+    config_set('autologout.settings','autologout_user.' . $userid. '.padding', $val);
+		config_set('autologout.settings','autologout_user.' . $userid. '.timeout', $timeout);
   }
 }
 
@@ -543,10 +561,9 @@ function _autologout_get_remaining_time() {
 }
 
 /**
- * Go through every role to get timeout value, default is the global timeout.
+ * Go through every role to get timeout values for roles.
  */
 function _autologout_get_role_timeout() {
-  $default_timeout = config_get('autologout.settings','autologout_timeout');
   $roles = user_roles(TRUE);
   $role_timeout = array();
 
@@ -557,7 +574,6 @@ function _autologout_get_role_timeout() {
       $role_timeout[$rid] = $timeout_role;
     }
   }
-
   return $role_timeout;
 }
 
@@ -581,30 +597,29 @@ function _autologout_get_user_timeout($uid = NULL) {
   else {
     $user = user_load($uid);
   }
-
   if ($user->uid == 0) {
     // Anonymous doesn't get logged out.
     return 0;
   }
 
-  if (is_numeric($user_timeout = config_get('autologout.settings','autologout_user_' . $user->uid))) {
+  if (config_get('autologout.settings','autologout_user_logout') == 1) {
     // User timeout takes precedence.
+		$user_timeout = config_get('autologout.settings','autologout_user.' . $user->uid . '.timeout');
     backdrop_alter('autologout_timeout', $user_timeout);
     return $user_timeout;
   }
 
   // Get role timeouts for user.
-  if (config_get('autologout.settings','autologout_role_logout')) {
+  if (config_get('autologout.settings','autologout_role_logout') == 1) {
     $user_roles = $user->roles;
+
     $output = array();
     $timeouts = _autologout_get_role_timeout();
-
     foreach ($user_roles as $rid => $role) {
-      if (isset($timeouts[$rid])) {
-        $output[$rid] = $timeouts[$rid];
+      if (isset($timeouts[$role])) {
+        $output[$role] = $timeouts[$role];
       }
     }
-
     // Assign the lowest timeout value to be session timeout value.
     if (!empty($output)) {
       // If one of the user's roles has a unique timeout, use this.
@@ -768,7 +783,6 @@ function autologout_set_role_timeout() {
 
 return;
 }
-
 
 
 /**

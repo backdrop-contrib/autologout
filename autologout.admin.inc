@@ -41,7 +41,17 @@ function autologout_settings() {
     '#size' => 10,
     '#maxlength' => 12,
     '#weight' => -8,
-    '#description' => t('The maximum logout threshold time that can be set by users who have the permission to set user level timeouts.'),
+    '#description' => t('The maximum logout time that can be set by users who have the permission to set user level timeouts.'),
+  );
+
+  $form['autologout_max_padding'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Max padding setting'),
+    '#default_value' => config_get('autologout.settings','autologout_max_padding'),
+    '#size' => 10,
+    '#maxlength' => 12,
+    '#weight' => -9,
+    '#description' => t('The maximum padding time that can be set by users who have the permission to set user level timeouts.'),
   );
 
   $form['autologout_padding'] = array(
@@ -59,6 +69,14 @@ function autologout_settings() {
     '#default_value' => config_get('autologout.settings','autologout_role_logout'),
     '#weight' => -4,
     '#description' => t('Enable each role to have its own timeout threshold, a refresh maybe required for changes to take effect. Any role not ticked will use the default timeout value. Any role can have a value of 0 which means that they will never be logged out.'),
+  );
+
+  $form['autologout_user_logout'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('User Timeout'),
+    '#default_value' => config_get('autologout.settings','autologout_user_logout'),
+    '#weight' => -5,
+    '#description' => t('Enable each user to have their own timeout threshold.'),
   );
 
   $form['autologout_redirect_url']  = array(
@@ -80,7 +98,7 @@ function autologout_settings() {
     '#type' => 'checkbox',
     '#title' => t('Use alternate logout method'),
     '#default_value' => config_get('autologout.settings','autologout_use_alt_logout_method'),
-    '#description' => t('Normally when auto logout is triggered, it is done via an AJAX service call. Sites that use an SSO provider, such as CAS, are likely to see this request fail with the error "Origin is not allowed by Access-Control-Allow-Origin". The alternate appraoch is to have the auto logout trigger a page redirect to initiate the logout process instead.'),
+    '#description' => t('Normally when auto logout is triggered, it is done via an AJAX service call. Sites that use an SSO provider, such as CAS, are likely to see this request fail with the error "Origin is not allowed by Access-Control-Allow-Origin". The alternate approach is to have the auto logout trigger a page redirect to initiate the logout process instead.'),
   ); 
 
   $form['autologout_message']  = array(
@@ -197,6 +215,7 @@ function autologout_settings_submit($form, &$form_state){
   $config->set('autologout_max_timeout', $form_state['values']['autologout_max_timeout']);
   $config->set('autologout_padding', $form_state['values']['autologout_padding']);
   $config->set('autologout_role_logout', $form_state['values']['autologout_role_logout']);
+	$config->set('autologout_user_logout', $form_state['values']['autologout_user_logout']);
   $config->set('autologout_redirect_url', $form_state['values']['autologout_redirect_url']);
   $config->set('autologout_no_dialog', $form_state['values']['autologout_no_dialog']);
   $config->set('autologout_use_alt_logout_method', $form_state['values']['autologout_use_alt_logout_method']);

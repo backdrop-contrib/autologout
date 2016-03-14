@@ -233,8 +233,8 @@ class AutologoutTestCase extends BackdropWebTestCase {
     $this->assertAutotimeout($uid, 0, t('User timeout uses role value of 0 if set for one of the user roles.'));
 
     // Role timeout used if personal timeout is empty string.
-    config_set('autologout.settings','autologout_role_logout', TRUE);
-    config_set('autologout.settings','autologout_role_2', TRUE);
+    config_set('autologout.settings','autologout_role_logout', 1);
+    config_set('autologout.settings','autologout_role.2.padding', 10);
     config_set('autologout.settings','autologout_role_2_timeout', 200);
     config_set('autologout.settings','autologout_user_' . $uid, '');
     $this->assertAutotimeout($uid, 200, t('User timeout uses role value if personal value is the empty string.'));

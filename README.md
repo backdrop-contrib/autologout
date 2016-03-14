@@ -1,17 +1,21 @@
 # Automated Logout
 
-This module provides a site administrator with the ability to log users
-out after a specified time of inactivity. It is highly customisable
-and includes "site policies" by role to enforce logout.
+This module provides a site administrator with the ability to set
+the system to log users out after a specified time of inactivity.
+It is highly customisable and includes "site policies" per role to
+set different timeouts for each role. It is also possible to allow
+users to set their own personal values.
 
 After a given timeout has passed, users are given a
-configurable session expired prompt. They can reset the timeout,
+configurable session-expired prompt. They can reset the timeout,
 logout, or ignore it in which case they'll be logged out after
 the padding time has elapsed. This is all backed up by a
 server side logout if js is disable or bypassed.
 
 
-This is a port from the Drupal module of the same name, v7.x-4.4
+This is a port from the Drupal module of the same name, v7.x-4.4,
+with some additions to provide the per role and per user
+optional settings.
 
 
 ## Status
