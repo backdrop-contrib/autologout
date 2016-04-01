@@ -213,6 +213,7 @@ function autologout_settings_submit($form, &$form_state){
   $config = config('autologout.settings');
   $config->set('autologout_timeout', $form_state['values']['autologout_timeout']);
   $config->set('autologout_max_timeout', $form_state['values']['autologout_max_timeout']);
+  $config->set('autologout_max_padding', $form_state['values']['autologout_max_padding']);
   $config->set('autologout_padding', $form_state['values']['autologout_padding']);
   $config->set('autologout_role_logout', $form_state['values']['autologout_role_logout']);
 	$config->set('autologout_user_logout', $form_state['values']['autologout_user_logout']);
