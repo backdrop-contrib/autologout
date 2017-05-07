@@ -4,15 +4,17 @@
  * Auto logout install file.
  */
 
-function user_names(){
-  // get a list of registered users
+/**
+ * Gets a list of registered users.
+ */
+function _autologout_user_names(){
   $result = db_select('users','u')
-	->fields('u', array('uid', 'name'))
-	->condition('uid',0,'>')
-  ->execute();
+    ->fields('u', array('uid', 'name'))
+    ->condition('uid',0,'>')
+    ->execute();
 
   $users = $result->fetchAllAssoc('uid', PDO::FETCH_ASSOC);
-	return $users;
+  return $users;
 }
 
 /**
@@ -22,7 +24,7 @@ function autologout_enable() {
 /**
  * Set autologout default timeout and padding values for each user.
  */
-  $users = user_names();
+  $users = _autologout_user_names();
   foreach ($users as $uid => $name) {
 	  config_set('autologout.settings','autologout_user.' . $uid . '.padding', 10);
 	  config_set('autologout.settings','autologout_user.' . $uid . '.timeout', 1800);
@@ -38,14 +40,9 @@ function autologout_enable() {
 }
 
 /**
- * Implements hook_install().
+ * Move autologout settings from variables to config.
  */
-
 function autologout_update_1000(){
-
-/**
- * Move views_send settings from variables to config.
- */
   $config = config('autologout.settings');
   $config->set('autologout_timeout', update_variable_get('autologout_timeout', 1800));
   $config->set('jstimer_js_load_option', update_variable_get('jstimer_js_load_option', 0));
@@ -73,7 +70,7 @@ function autologout_update_1000(){
   }
 
   // re-use any previous values for each user's padding
-  $users = user_names();
+  $users = _autologout_user_names();
 	foreach ($users as $uid => $name) {
 	  if(update_variable_get('autologout_user_' . $uid)){
 	    config_set('autologout.settings','autologout_user.' . $uid . '.padding', update_variable_get('autologout_user_' . $uid, 10));
