@@ -243,7 +243,7 @@ class AutologoutTestCase extends BackdropWebTestCase {
     config_set('autologout.settings','autologout_user_logout', 1);
     config_set('autologout.settings','autologout_role.authenticated.active', 1);
     config_set('autologout.settings','autologout_role.authenticated.timeout', 200);
-    config_set('autologout.settings','autologout_user.' . $uid . '.timeout', '');
+    _autologout_set_user_timeout($uid);
     $this->assertAutotimeout($uid, 200, t('User timeout uses role value if personal value is the empty string.'));
 
     // Default timeout used if personal timeout is empty string.
@@ -251,7 +251,7 @@ class AutologoutTestCase extends BackdropWebTestCase {
     config_set('autologout.settings','autologout_user_logout', 1);
     config_set('autologout.settings','autologout_role.authenticated.active', FALSE);
     config_set('autologout.settings','autologout_role.authenticated.timeout', 200);
-    config_set('autologout.settings','autologout_user.' . $uid . '.timeout', '');
+    _autologout_set_user_timeout($uid);
     $this->assertAutotimeout($uid, 100, t('User timeout uses default value if personal value is the empty string and no role timeout is specified.'));
 
     // Personal timeout used if set.
@@ -259,7 +259,7 @@ class AutologoutTestCase extends BackdropWebTestCase {
     config_set('autologout.settings','autologout_user_logout', 1);
     config_set('autologout.settings','autologout_role.authenticated.active', TRUE);
     config_set('autologout.settings','autologout_role.authenticated.timeout', 200);
-    config_set('autologout.settings','autologout_user.' . $uid . '.timeout', 300);
+    _autologout_set_user_timeout($uid, NULL, 300);
     $this->assertAutotimeout($uid, 300, t('User timeout uses personal timeout if specified.'));
   }
 
@@ -734,7 +734,7 @@ class AutoLogoutByRoleTestCase extends BackdropWebTestCase {
     config_set('autologout.settings',"autologout_role.{$this->role->name}.timeout", '20');
 
     // Authenticated role has its own logout at 10 seconds.
-    $authenticated_role = user_role_load_by_name('authenticated user');
+    $authenticated_role = user_role_load('authenticated');
     config_set('autologout.settings',"autologout_role.{$authenticated_role->name}.active", '1');
     config_set('autologout.settings',"autologout_role.{$authenticated_role->name}.timeout", '10');
 
