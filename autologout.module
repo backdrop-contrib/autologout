@@ -606,7 +606,9 @@ function _autologout_get_user_timeout($uid = NULL) {
     // User timeout takes precedence.
 		$user_timeout = config_get('autologout.settings','autologout_user.' . $user->uid . '.timeout');
     backdrop_alter('autologout_timeout', $user_timeout);
-    return $user_timeout;
+    if ($user_timeout) {
+      return $user_timeout;
+    }
   }
 
   // Get role timeouts for user.
@@ -795,16 +797,3 @@ function autologout_config_info(){
   );
   return $prefixes;
 }
-
-/**
- * Implements hook_autoload_info().
- */
-function autologout_autoload_info(){
-  return array(
-    'AutologoutTestSessionCleanupOnLogin' => 'tests/autologout.test',
-    'AutologoutTestCase' => 'tests/autologout.test',
-    'AutologoutAjaxTestCase' => 'tests/autologout.test',
-    'AutoLogoutByRoleTestCase' => 'tests/autologout.test',
-  );
-}
-
