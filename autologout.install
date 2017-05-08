@@ -4,6 +4,45 @@
  * Auto logout install file.
  */
 
+ /**
+  * Implements hook_schema().
+  */
+ function autologout_schema() {
+   $schema['autologout_user_settings'] = array(
+     'description' => 'Maps users to autologout settings.',
+     'fields' => array(
+       'uid' => array(
+         'type' => 'int',
+         'unsigned' => TRUE,
+         'not null' => TRUE,
+         'default' => 0,
+         'description' => 'Primary Key: {users}.uid for user.',
+       ),
+       'padding' => array(
+         'type' => 'int',
+         'unsigned' => TRUE,
+         'default' => 0,
+         'description' => 'Padding: Amount of time to give a user to respond to the logout dialog before ending their session.',
+       ),
+       'timeout' => array(
+         'type' => 'int',
+         'unsigned' => TRUE,
+         'default' => 0,
+         'description' => 'Timeout: The length of inactivity time before automated log out.',
+       ),
+     ),
+     'primary key' => array('uid'),
+     'foreign keys' => array(
+       'user' => array(
+         'table' => 'users',
+         'columns' => array('uid' => 'uid'),
+       ),
+     ),
+   );
+
+   return $schema;
+ }
+
 function user_names(){
   // get a list of registered users
   $result = db_select('users','u')
@@ -16,17 +55,24 @@ function user_names(){
 }
 
 /**
- * Implements hook_enable().
+ * Implements hook_install().
  */
-function autologout_enable() {
-/**
- * Set autologout default timeout and padding values for each user.
- */
+function autologout_install() {
+  // Set autologout default timeout and padding values for each user.
   $users = user_names();
-  foreach ($users as $uid => $name) {
-	  config_set('autologout.settings','autologout_user.' . $uid . '.padding', 10);
-	  config_set('autologout.settings','autologout_user.' . $uid . '.timeout', 1800);
+  $insert = db_insert('autologout_user_settings')->fields(array('uid', 'padding', 'timeout'));
+  $timeout = config_get('autologout.settings', 'autologout_timeout');
+  foreach ($users as $uid => $user) {
+    if ($uid == 1) {
+      $timeout = config_get('autologout.settings', 'autologout_role.administrator.timeout');
+    }
+    $insert->values(array(
+      'uid' => $uid,
+      'padding' => 10,
+      'timeout' => $timeout,
+    ));
   }
+  $insert->execute();
 
   // default settings for each role
 
@@ -75,7 +121,7 @@ function autologout_update_1000(){
   // re-use any previous values for each user's padding
   $users = user_names();
 	foreach ($users as $uid => $name) {
-	  if(update_variable_get('autologout_user_' . $uid)){
+	  if (update_variable_get('autologout_user_' . $uid)){
 	    config_set('autologout.settings','autologout_user.' . $uid . '.padding', update_variable_get('autologout_user_' . $uid, 10));
 		  update_variable_del('autologout_role_' . $uid);
 		}
@@ -104,4 +150,37 @@ function autologout_update_1000(){
  */
 function autologout_update_last_removed() {
   return 7401;
+}
+
+/**
+ * Migrate from config to a new autologout_user_settings table.
+ */
+function autologout_update_1001() {
+  $schema = autologout_schema();
+  if (!db_table_exists('autologout_user_settings')) {
+    db_create_table('autologout_user_settings', $schema['autologout_user_settings']);
+  }
+  $config = config('autologout.settings');
+  $users = user_names();
+  $insert = db_insert('autologout_user_settings')->fields(array('uid', 'padding', 'timeout'));
+  foreach ($users as $uid => $user) {
+    // Check if user exists.
+    $user_settings = db_select('autologout_user_settings', 'au')
+      ->fields('au', array('uid'))
+      ->condition('uid', $user->uid)
+      ->execute()
+      ->fetchAssoc();
+    if (!empty($user_settings['uid'])) {
+      continue;
+    }
+    // Insert if user record doesn't exist.
+    $insert->values(array(
+      'uid' => $uid,
+      'padding' => !empty($config->get('autologout_user.' . $uid . '.padding')) ? $config->get('autologout_user.' . $uid . '.padding') : 10,
+      'timeout' => !empty($config->get('autologout_user.' . $uid . '.timeout')) ? $config->get('autologout_user.' . $uid . '.timeout') : 1800,
+    ));
+  }
+  $insert->execute();
+  $config->clear('autologout_user');
+  $config->save();
 }
