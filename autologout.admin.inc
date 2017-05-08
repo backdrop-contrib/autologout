@@ -99,7 +99,7 @@ function autologout_settings() {
     '#title' => t('Use alternate logout method'),
     '#default_value' => config_get('autologout.settings','autologout_use_alt_logout_method'),
     '#description' => t('Normally when auto logout is triggered, it is done via an AJAX service call. Sites that use an SSO provider, such as CAS, are likely to see this request fail with the error "Origin is not allowed by Access-Control-Allow-Origin". The alternate approach is to have the auto logout trigger a page redirect to initiate the logout process instead.'),
-  ); 
+  );
 
   $form['autologout_message']  = array(
     '#type' => 'textarea',
@@ -236,4 +236,6 @@ function autologout_settings_submit($form, &$form_state){
 	  config_set('autologout.settings','autologout_role.' . $rid . '.active',$form_state['values']["autologout_role_" . $rid]);
 	  config_set('autologout.settings','autologout_role.' . $rid . '.timeout', $form_state['values']["autologout_role_" . $rid . "_timeout"]);
   }
+
+	backdrop_set_message(t('The configuration options have been saved.'));
 }

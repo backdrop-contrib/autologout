@@ -1,4 +1,4 @@
-[Autologout]
+[AutologoutTestSessionCleanupOnLogin]
 name = Autologout Session Cleanup Tests
 description = Ensure that the autologout module cleans up stale sessions at login.
 group = Autologout
