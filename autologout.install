@@ -43,9 +43,9 @@
    return $schema;
  }
 
- /**
-  * Gets a list of registered users.
-  */
+/**
+ * Gets a list of registered users.
+ */
 function _autologout_user_names(){
   $result = db_select('users','u')
     ->fields('u', array('uid', 'name'))
@@ -61,7 +61,7 @@ function _autologout_user_names(){
  */
 function autologout_install() {
   // Set autologout default timeout and padding values for each user.
-  $users = user_names();
+  $users = _autologout_user_names();
   $insert = db_insert('autologout_user_settings')->fields(array('uid', 'padding', 'timeout'));
   $timeout = config_get('autologout.settings', 'autologout_timeout');
   foreach ($users as $uid => $user) {
@@ -158,7 +158,7 @@ function autologout_update_1001() {
     db_create_table('autologout_user_settings', $schema['autologout_user_settings']);
   }
   $config = config('autologout.settings');
-  $users = user_names();
+  $users = _autologout_user_names();
   $insert = db_insert('autologout_user_settings')->fields(array('uid', 'padding', 'timeout'));
   foreach ($users as $uid => $user) {
     // Check if user exists.
