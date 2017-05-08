@@ -150,6 +150,7 @@
           $.ajax({
             url: Backdrop.settings.basePath + "?q=autologout_ahah_logout",
             type: "POST",
+            progress: {},
             success: function() {
               window.location = localSettings.redirect_url;
             },
@@ -194,6 +195,9 @@
           return ajax.success(response, status);
         };
 
+        // Disable progress element
+        ajax.progress = {};
+
         try {
           ajax.beforeSerialize(ajax.element, ajax.options);
           $.ajax(ajax.options);
@@ -208,7 +212,8 @@
         event: 'autologout.getTimeLeft',
         error: function(XMLHttpRequest, textStatus) {
           // Disable error reporting to the screen.
-        }
+        },
+        progress: {},
       });
 
       /**
@@ -244,6 +249,9 @@
           // Let Backdrop.ajax handle the JSON response.
           return ajax.success(response, status);
         };
+
+        // Disable progress element
+        ajax.progress = {};
 
         try {
           ajax.beforeSerialize(ajax.element, ajax.options);
