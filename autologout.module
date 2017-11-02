@@ -451,7 +451,7 @@ function autologout_init() {
   $settings = array(
     'timeout' => $refresh_only ? ($timeout * 500) : ($timeout * 1000),
     'timeout_padding' => $timeout_padding * 1000,
-    'message' => $msg,
+    'message' => filter_xss($msg),
     'redirect_url' => url($redirect_url, array('query' => $redirect_query)),
     'title' => t('@name Alert', array('@name' => config_get('system.core','site_name'))),
     'refresh_only' => $refresh_only,
@@ -746,7 +746,7 @@ function _autologout_inactivity_message() {
   $message = config_get('autologout.settings','autologout_inactivity_message');
   backdrop_alter('autologout_message', $message);
   if (!empty($message)) {
-    backdrop_set_message($message);
+    backdrop_set_message(filter_xss($message));
   }
 }
 

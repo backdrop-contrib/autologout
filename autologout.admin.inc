@@ -106,7 +106,9 @@ function autologout_settings() {
     '#title' => t('Message to display in the logout dialog'),
     '#default_value' => config_get('autologout.settings','autologout_message'),
     '#size' => 40,
-    '#description' => t('This message must be plain text as it might appear in a JavaScript confirm dialog.'),
+    '#description' => t('This message must be plain text as it might appear in a JavaScript confirm dialog.')
+      . ' ' . t('This text will passed through <a href="!url">filter_xss</a>.',
+        array('!url' => "https://api.backdropcms.org/api/backdrop/core%21includes%21common.inc/function/filter_xss/1")),
   );
 
   $form['autologout_inactivity_message']  = array(
@@ -114,7 +116,9 @@ function autologout_settings() {
     '#title' => t('Message to display to the user after they are logged out.'),
     '#default_value' => config_get('autologout.settings','autologout_inactivity_message'),
     '#size' => 40,
-    '#description' => t('This message is displayed after the user was logged out due to inactivity. You can leave this blank to show no message to the user.'),
+    '#description' => t('This message is displayed after the user was logged out due to inactivity. You can leave this blank to show no message to the user.')
+      . ' ' . t('This text will passed through <a href="!url">filter_xss</a>.',
+        array('!url' => "https://api.backdropcms.org/api/backdrop/core%21includes%21common.inc/function/filter_xss/1")),
   );
 
   $form['autologout_use_watchdog'] = array(
