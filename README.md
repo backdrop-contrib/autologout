@@ -12,19 +12,15 @@ logout, or ignore it in which case they'll be logged out after
 the padding time has elapsed. This is all backed up by a
 server side logout if js is disable or bypassed.
 
-
 This is a port from the Drupal module of the same name, v7.x-4.4,
 with some additions to provide the per role and per user
 optional settings.
 
-
 ## Status
 
-This initial release for Backdrop (1.x-4.4.0) can be installed and
-will automatically log-out a user after the prescribed interval.
-However, it has not yet been fully tested and it is not passing
-all its inbuilt tests. please report any issues you may find.
-
+This is a revised and working release (1.x-4.5.x). I am very 
+grateful for the work done by Herbdool in identifying and
+fixing some issues present in the initial releases. (1.x-4.4.x).
 
 ## Features
 
@@ -37,7 +33,6 @@ all its inbuilt tests. please report any issues you may find.
   + Includes developer hooks to allow users to remain logged in
     depending on your own project specific requirements
   + Optional integration with Javascript Timer
-
 
 ## Installation
 
@@ -59,7 +54,8 @@ http://www.lullabot.com/blog/article/module-monday-auto-logout
 
 ## License
 
-This project is GPL v2 software. See the LICENSE.txt file in this directory for complete text.
+This project is GPL v2 software. See the LICENSE.txt file in this 
+directory for complete text.
     
         
 ## Current Maintainer for Backdrop
@@ -85,4 +81,3 @@ Graham Oliver (github.com/Graham-72/)
 
 This port to Backdrop would not, of course, be possible without all
 the work done by the developers and maintainers of the Drupal module.
-

@@ -170,11 +170,13 @@ function autologout_update_1001() {
     if (!empty($user_settings['uid'])) {
       continue;
     }
-    // Insert if user record doesn't exist.
+    // Insert if user record doesn't yet exist.
+    $padding = config_get('autologout.settings', 'autologout_user.' . $uid . '.padding');
+    $timeout = config_get('autologout.settings', 'autologout_user.' . $uid . '.timeout');
     $insert->values(array(
       'uid' => $uid,
-      'padding' => !empty($config->get('autologout_user.' . $uid . '.padding')) ? $config->get('autologout_user.' . $uid . '.padding') : 10,
-      'timeout' => !empty($config->get('autologout_user.' . $uid . '.timeout')) ? $config->get('autologout_user.' . $uid . '.timeout') : 1800,
+      'padding' => $padding ? $padding : 10,
+      'timeout' => $timeout ? $timeout : 1800,
     ));
   }
   $insert->execute();
