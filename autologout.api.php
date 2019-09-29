@@ -30,7 +30,7 @@ function hook_autologout_prevent() {
  *
  * @return bool
  *   By returning TRUE from this function the JS which talks to autologout
- *   module is included in the current page request and peridoically dials
+ *   module is included in the current page request and periodically dials
  *   back to the server to keep the login alive.
  *   Return FALSE (or nothing) to just use the standard behaviour.
  */
