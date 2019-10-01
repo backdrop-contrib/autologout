@@ -200,7 +200,16 @@
             window.location = localSettings.redirect_url;
           }
 
-          callback(response[2].settings.time);
+          response.forEach(
+              function(element) {
+                  if(element.command == 'settings')
+                  {
+                      if (typeof element.settings.time !== 'undefined') {
+                          callback(element.settings.time);
+                      }
+                  }
+              }
+          );
 
           // Let Backdrop.ajax handle the JSON response.
           return ajax.success(response, status);
