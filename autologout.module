@@ -499,6 +499,26 @@ function autologout_init() {
 }
 
 /**
+ * Builds a destination query parameter for the current page.
+ *
+ * This is identical to backdrop_get_destination(), except that we always encode
+ * any existing destination query-string parameter, rather than honour it as an
+ * override.
+ *
+ * This causes the user to be returned to the exact same URL they were on when
+ * they were auto-logged-off (with destination parameter untouched), rather than
+ * being directed straight to their destination.
+ */
+function autologout_get_current_path_as_destination() {
+  $path = (string) current_path();
+  $query = backdrop_http_build_query(backdrop_get_query_parameters());
+  if ($query != '') {
+    $path .= '?' . $query;
+  }
+  return array('destination' => $path);
+}
+
+/**
  * Implements hook_autologout_prevent().
  */
 function autologout_autologout_prevent() {
