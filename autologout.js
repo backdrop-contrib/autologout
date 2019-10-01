@@ -221,6 +221,9 @@
       Backdrop.ajax['autologout.getTimeLeft'] = new Backdrop.ajax(null, $(document.body), {
         url: Backdrop.settings.basePath + '?q=autologout_ajax_get_time_left&token=' + localSettings.ajax_get_time_left_token,
         event: 'autologout.getTimeLeft',
+        submit: {
+          'ajax_page_state': Drupal.settings.ajaxPageState
+        },
         error: function(XMLHttpRequest, textStatus) {
           // Disable error reporting to the screen.
         },
@@ -276,6 +279,9 @@
       Backdrop.ajax['autologout.refresh'] = new Backdrop.ajax(null, $(document.body), {
         url: Backdrop.settings.basePath + '?q=autologout_ahah_set_last&token=' + localSettings.ajax_set_last_token,
         event: 'autologout.refresh',
+        submit: {
+          'ajax_page_state': Drupal.settings.ajaxPageState
+        },
         error: function(XMLHttpRequest, textStatus) {
           // Disable error reporting to the screen.
         }
