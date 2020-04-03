@@ -244,7 +244,7 @@ function autologout_settings_validate($form, &$form_state) {
     if (!empty($ip_address) && !filter_var(trim($ip_address), FILTER_VALIDATE_IP)) {
       form_set_error(
         'whitelisted_ip_addresses',
-        t('Whitlelisted IP address list should contain only valid IP addresses, one per row')
+        t('Whitelisted IP address list should contain only valid IP addresses, one per row')
       );
     }
   }
