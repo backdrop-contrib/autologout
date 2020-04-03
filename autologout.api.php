@@ -58,3 +58,19 @@ function hook_autologout_refresh_only() {
 function hook_autologout_timeout_alter(&$timeout) {
   $timeout = 1800;
 }
+
+/**
+ * Allow the redirect URL and query to be modified prior to auto-logout.
+ *
+ * Use case: For example, if certain users such as Admins need to be
+ * redirected to a special admin-only URL.
+ */
+function hook_autologout_redirect_url_alter(&$redirect_url, &$redirect_query) {
+  global $user;
+  if ($user->name == 'jane.doe') {
+    $redirect_url = 'bye-jane';
+  }
+  if ($user->name == 'mallory') {
+    $redirect_query['was_mallory'] = 1;
+  }
+}

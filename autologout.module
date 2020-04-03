@@ -446,6 +446,9 @@ function autologout_init() {
   $use_alt_logout_method = $config->get('autologout_use_alt_logout_method');
   backdrop_add_library('system', 'ui.dialog');
 
+  // Provide a hook to allow the redirect URL and query to be customised
+  drupal_alter('autologout_redirect_url', $redirect_url, $redirect_query);
+
   // Get all settings JS will need for dialog.
   $msg = t($config->get('autologout_message'));
   $settings = array(
