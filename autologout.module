@@ -441,7 +441,7 @@ function autologout_init() {
   $timeout = _autologout_get_user_timeout();
   $timeout_padding = $config->get('autologout_padding');
   $redirect_url = $config->get('autologout_redirect_url');
-  $redirect_query = backdrop_get_destination() + array('autologout_timeout' => 1);
+  $redirect_query = autologout_get_current_path_as_destination() + array('autologout_timeout' => 1);
   $no_dialog = $config->get('autologout_no_dialog');
   $use_alt_logout_method = $config->get('autologout_use_alt_logout_method');
   backdrop_add_library('system', 'ui.dialog');
