@@ -549,6 +549,19 @@ function autologout_autologout_prevent() {
   if (!empty($user->data['remember_me'])) {
     return TRUE;
   }
+  // If user IP address is in the whitelist.
+  $stored_whitelist = config_get('autologout_settings', 'autologout_whitelisted_ip_addresses');
+  if (!empty($stored_whitelist)) {
+    $ip_address_whitelist = array_map(
+      'trim',
+      explode("\n", trim($stored_whitelist))
+    );
+
+    if (($ip_address_whitelist) && in_array(ip_address(), $ip_address_whitelist)) {
+      return TRUE;
+    }
+  }
+
 }
 
 /**
