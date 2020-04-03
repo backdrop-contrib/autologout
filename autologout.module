@@ -796,7 +796,7 @@ function _autologout_inactivity_message() {
   $message = config_get('autologout.settings','autologout_inactivity_message');
   backdrop_alter('autologout_message', $message);
   if (!empty($message)) {
-    backdrop_set_message(filter_xss($message), 'status', FALSE);
+    backdrop_set_message(filter_xss(t($message)), 'status', FALSE);
   }
 }
 
