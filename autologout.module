@@ -759,7 +759,7 @@ function _autologout_logout() {
   global $user;
 
   if (config_get('autologout.settings','autologout_use_watchdog')) {
-    watchdog('user', 'Session automatically closed for %name by autologout.', array('%name' => $user->name));
+    watchdog('autologout', 'Session automatically closed for %name by autologout.', array('%name' => $user->name));
   }
 
   // Destroy the current session.
