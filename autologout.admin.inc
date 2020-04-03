@@ -99,7 +99,7 @@ function autologout_settings() {
     '#title' => t('Redirect URL at logout'),
     '#default_value' => config_get('autologout.settings','autologout_redirect_url'),
     '#size' => 40,
-    '#description' => t('Send users to this internal page when they are logged out.'),
+    '#description' => t('Send users to this internal page when they are logged out. Leave blank to disable redirection and reload the same page instead.'),
   );
 
   $form['autologout_no_dialog'] = array(
