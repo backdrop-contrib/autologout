@@ -8,7 +8,7 @@
   "autologout_redirect_url":"user/login",
   "autologout_no_dialog":0,
   "autologout_use_alt_logout_method":0,
-  "autologout_message":"Your session is about to expire. Do you want to reset it?",
+  "autologout_message":"We are about to log you out for inactivity. If we do, you will lose any unsaved work. Do you need more time?",
   "autologout_inactivity_message":"You have been logged out due to inactivity.",
   "autologout_use_watchdog":1,
   "autologout_enforce_admin":0,
