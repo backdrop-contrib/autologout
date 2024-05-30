@@ -63,6 +63,14 @@ function autologout_settings() {
     '#description' => t('How many seconds to give a user to respond to the logout dialog before ending their session.'),
   );
 
+  $form['autologout_user_logout'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('User Timeout'),
+    '#default_value' => config_get('autologout.settings','autologout_user_logout'),
+    '#weight' => -5,
+    '#description' => t('Enable each user to have their own timeout threshold.'),
+  );
+
   $form['autologout_role_logout'] = array(
     '#type' => 'checkbox',
     '#title' => t('Role Timeout'),
@@ -71,12 +79,18 @@ function autologout_settings() {
     '#description' => t('Enable each role to have its own timeout threshold, a refresh maybe required for changes to take effect. Any role not ticked will use the default timeout value. Any role can have a value of 0 which means that they will never be logged out.'),
   );
 
-  $form['autologout_user_logout'] = array(
+  $form['autologout_role_logout_max'] = array(
     '#type' => 'checkbox',
-    '#title' => t('User Timeout'),
-    '#default_value' => config_get('autologout.settings','autologout_user_logout'),
-    '#weight' => -5,
-    '#description' => t('Enable each user to have their own timeout threshold.'),
+    '#title' => t('Use highest role timeout value'),
+    '#default_value' => config_get('autologout.settings','autologout_role_logout_max'),
+    '#weight' => -3,
+    '#description' => t('Check this to use the highest timeout value instead of the lowest for users that have more than one role.'),
+    '#states' => [
+        'visible' => [
+          // Only show this field when the 'role_logout' checkbox is enabled.
+          ':input[name="autologout_role_logout"]' => ['checked' => TRUE],
+        ],
+      ],
   );
 
   $form['autologout_redirect_url']  = array(
@@ -149,6 +163,12 @@ function autologout_settings() {
     '#weight' => -2,
     '#title' => t('If Enabled every user in role will be logged out based on that roles timeout, unless the user has an individual timeout set.'),
     '#theme' => 'autologout_render_table',
+    '#states' => [
+        'visible' => [
+          // Only show this field when the 'role_logout' checkbox is enabled.
+          ':input[name="autologout_role_logout"]' => ['checked' => TRUE],
+        ],
+      ],
   );
 
   foreach (user_roles(TRUE) as $key => $role) {
@@ -220,6 +240,7 @@ function autologout_settings_submit($form, &$form_state){
   $config->set('autologout_max_padding', $form_state['values']['autologout_max_padding']);
   $config->set('autologout_padding', $form_state['values']['autologout_padding']);
   $config->set('autologout_role_logout', $form_state['values']['autologout_role_logout']);
+  $config->set('autologout_role_logout_max', $form_state['values']['autologout_role_logout_max']);
 	$config->set('autologout_user_logout', $form_state['values']['autologout_user_logout']);
   $config->set('autologout_redirect_url', $form_state['values']['autologout_redirect_url']);
   $config->set('autologout_no_dialog', $form_state['values']['autologout_no_dialog']);
@@ -231,7 +252,7 @@ function autologout_settings_submit($form, &$form_state){
   $config->save();
 
 	if (module_exists('jstimer') && module_exists('jst_timer')) {
-	  $config_set('autologout.settings','autologout_jstimer_format', $form_state['values']['autologout_jstimer_format']);
+	  config_set('autologout.settings','autologout_jstimer_format', $form_state['values']['autologout_jstimer_format']);
 	}
 
 	// For each role, update config setting
