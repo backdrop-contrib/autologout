@@ -3,3 +3,7 @@ description = Adds automated timed logout
 backdrop = 1.x
 type = module
 configure = admin/config/people/autologout
+
+package = User Accounts
+tags[] = Account Management
+tags[] = User Login
