@@ -35,6 +35,17 @@
           $(event.target).trigger('preventAutologout');
         });
 
+        // Bind mousemove events to preventAutoLogout event.
+        $('body').bind('mousemove', function (event) {
+          $(event.target).trigger('preventAutologout');
+        });
+
+        // Keyup should always prevent autologout (relevant for CKEditor5 too).
+        $('body').bind('keyup', function (event) {
+          $(event.target).trigger('preventAutologout');
+        });
+
+
         // Support for CKEditor.
         if (typeof CKEDITOR !== 'undefined') {
           CKEDITOR.on('instanceCreated', function(e) {
