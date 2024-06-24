@@ -535,7 +535,7 @@ function autologout_autologout_refresh_only() {
 }
 
 /**
- * Implements hook_page_build().
+ * Implements hook_preprocess_page().
  *
  * Add a form element to every page which is used to detect if the page was
  * loaded from browser cache. This happens when the browser's back button is
@@ -543,11 +543,9 @@ function autologout_autologout_refresh_only() {
  * to 1 after initial load. If this is 1 on subsequent loads, the page was
  * loaded from cache and an autologout timeout refresh needs to be triggered.
  */
-function autologout_page_build(&$page) {
+function autologout_preprocess_page(&$variables) {
   if (!_autologout_prevent()) {
-    $page['page_bottom']['autologout'] = array(
-      '#markup' => '<form id="autologout-cache-check"><input type="hidden" id="autologout-cache-check-bit" value="0" /></form>',
-    );
+    $variables['page_bottom'] .= '<form id="autologout-cache-check"><input type="hidden" id="autologout-cache-check-bit" value="0" /></form>';
   }
 }
 
