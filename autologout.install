@@ -183,3 +183,15 @@ function autologout_update_1001() {
   $config->clear('autologout_user');
   $config->save();
 }
+
+/**
+ * Make autologout warning message more user friendly.
+ */
+function autologout_update_1002() {
+  $config = config('autologout.settings');
+  $message = $config->get('message');
+  if ($message === 'Your session is about to expire. Do you want to reset it?') {
+    $config->set('message', 'We are about to log you out for inactivity. If we do, you will lose any unsaved work. Do you need more time?');
+  }
+  $config->save();
+}
