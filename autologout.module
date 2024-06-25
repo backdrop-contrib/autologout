@@ -674,10 +674,15 @@ function _autologout_get_user_timeout($uid = NULL) {
         $output[$role] = $timeouts[$role];
       }
     }
-    // Assign the lowest timeout value to be session timeout value.
+    // Assign the lowest/highest timeout value to be session timeout value.
     if (!empty($output)) {
       // If one of the user's roles has a unique timeout, use this.
       $timeout = min($output);
+      // If no role has zero set then check if the role with max timeout should
+      // be used instead.
+      if ($timeout && config_get('autologout.settings','autologout_role_logout_max') == 1) {
+        $timeout = max($output);
+      }
       backdrop_alter('autologout_timeout', $timeout);
       return $timeout;
     }
