@@ -49,7 +49,7 @@ function hook_autologout_refresh_only() {
  * applications via iframe which also requires to extend its sessions.
  */
  function hook_auto_logout_session_reset($user) {
-   $myOtherIframeApplication->resetSession($user->uid);
+  $myOtherIframeApplication->resetSession($user->uid);
  }
 
 /**

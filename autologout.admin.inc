@@ -10,9 +10,10 @@
  */
 function autologout_settings() {
   // set config for each role.
-	autologout_set_role_timeout();
+  autologout_set_role_timeout();
 
   $form = array();
+  $config = config('autologout.settings');
   $timeout = config_get('autologout.settings','autologout_timeout');
 
   if (module_exists('jstimer')) {
@@ -241,7 +242,7 @@ function autologout_settings_submit($form, &$form_state){
   $config->set('autologout_padding', $form_state['values']['autologout_padding']);
   $config->set('autologout_role_logout', $form_state['values']['autologout_role_logout']);
   $config->set('autologout_role_logout_max', $form_state['values']['autologout_role_logout_max']);
-	$config->set('autologout_user_logout', $form_state['values']['autologout_user_logout']);
+  $config->set('autologout_user_logout', $form_state['values']['autologout_user_logout']);
   $config->set('autologout_redirect_url', $form_state['values']['autologout_redirect_url']);
   $config->set('autologout_no_dialog', $form_state['values']['autologout_no_dialog']);
   $config->set('autologout_use_alt_logout_method', $form_state['values']['autologout_use_alt_logout_method']);
@@ -249,18 +250,19 @@ function autologout_settings_submit($form, &$form_state){
   $config->set('autologout_inactivity_message', $form_state['values']['autologout_inactivity_message']);
   $config->set('autologout_use_watchdog', $form_state['values']['autologout_use_watchdog']);
   $config->set('autologout_enforce_admin', $form_state['values']['autologout_enforce_admin']);
-  $config->save();
 
-	if (module_exists('jstimer') && module_exists('jst_timer')) {
-	  config_set('autologout.settings','autologout_jstimer_format', $form_state['values']['autologout_jstimer_format']);
-	}
-
-	// For each role, update config setting
-	$roles = user_roles(TRUE);
-  foreach ($roles as $rid => $role) {
-	  config_set('autologout.settings','autologout_role.' . $rid . '.active',$form_state['values']["autologout_role_" . $rid]);
-	  config_set('autologout.settings','autologout_role.' . $rid . '.timeout', $form_state['values']["autologout_role_" . $rid . "_timeout"]);
+  if (module_exists('jstimer') && module_exists('jst_timer')) {
+    $config->set('autologout_jstimer_format', $form_state['values']['autologout_jstimer_format']);
   }
 
-	backdrop_set_message(t('The configuration options have been saved.'));
+  // For each role, update config setting
+  $roles = user_roles(TRUE);
+  foreach ($roles as $rid => $role) {
+    $config->set('autologout_role.' . $rid . '.active',$form_state['values']["autologout_role_" . $rid]);
+    $config->set('autologout_role.' . $rid . '.timeout', $form_state['values']["autologout_role_" . $rid . "_timeout"]);
+  }
+
+  $config->save();
+
+  backdrop_set_message(t('The configuration options have been saved.'));
 }
