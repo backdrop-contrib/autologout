@@ -36,17 +36,14 @@ fixing some issues present in the initial releases. (1.x-4.4.x).
 
 ## Installation
 
-* Install this module using the official Backdrop CMS instructions at
-  https://backdropcms.org/guide/modules.
+* Install this module using the official [Backdrop CMS instructions](https://backdropcms.org/guide/modules).
 * Use the configuration page at /admin/config/people/autologout
   [ Configuration > User Accounts > Auto Logout ]
   to set various values.
 
-
 ## Help & Documentation
 
-Checkout this blog post from Lullabot "Module Monday: Auto Logout"
-http://www.lullabot.com/blog/article/module-monday-auto-logout
+Checkout this blog post from Lullabot ["Module Monday: Auto Logout"](http://www.lullabot.com/blog/article/module-monday-auto-logout).
 
 ## License
 
@@ -67,11 +64,6 @@ directory for complete text.
 * Sumit Madan (sumitmadan)
 * str8
 * Prabin Giri (prabeen.giri)
-
-### Supporting organizations
-
-* Deeson
-* QED42 (Drupal 8 release)
 
 ### Acknowledgement
 

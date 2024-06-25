@@ -60,6 +60,7 @@ function _autologout_user_names(){
  * Implements hook_install().
  */
 function autologout_install() {
+  $config = config('autologout.settings');
   // Set autologout default timeout and padding values for each user.
   $users = _autologout_user_names();
   $insert = db_insert('autologout_user_settings')->fields(array('uid', 'padding', 'timeout'));
