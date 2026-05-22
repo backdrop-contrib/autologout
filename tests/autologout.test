@@ -15,6 +15,12 @@ class AutologoutTestSessionCleanupOnLogin extends BackdropWebTestCase {
    */
   protected $curlHandles = array();
   protected $loggedInUsers = array();
+
+  /**
+   * User with access to autologout-protected pages.
+   *
+   * @var User
+   */
   protected $privileged_user;
 
   /**
@@ -78,6 +84,8 @@ class AutologoutTestSessionCleanupOnLogin extends BackdropWebTestCase {
 
   /**
    * Get active sessions for given user.
+   *
+   * @param User $account
    */
   public function getSessions($account) {
     // Check there is one session in the sessions table.
@@ -120,7 +128,7 @@ class AutologoutTestSessionCleanupOnLogin extends BackdropWebTestCase {
 
     // Set a new unique cookie filename.
     do {
-      $this->cookieFile = $this->public_files_directory . '/' . $this->randomName() . '.jar';
+      $this->cookieFile = $this->public_files_directory . '/' . (string) $this->randomName() . '.jar';
     }
     while (isset($this->curlHandles[$this->cookieFile]));
 
@@ -168,7 +176,7 @@ class AutologoutTestSessionCleanupOnLogin extends BackdropWebTestCase {
     $this->curlHandles = array();
     $this->loggedInUsers = array();
     $this->loggedInUser = FALSE;
-    $this->cookieFile = $this->public_files_directory . '/' . $this->randomName() . '.jar';
+    $this->cookieFile = $this->public_files_directory . '/' . (string) $this->randomName() . '.jar';
     unset($this->curlHandle);
   }
 }
@@ -180,8 +188,14 @@ class AutologoutTestCase extends BackdropWebTestCase {
 
   /**
    * User with admin rights.
+   *
+   * @var User
    */
   protected $privileged_user;
+
+  /**
+   * @var object
+   */
   protected $role;
 
   /**
@@ -492,9 +506,10 @@ class AutologoutAjaxTestCase extends BackdropWebTestCase {
 
   /**
    * User with admin rights.
+   *
+   * @var User
    */
   protected $privileged_user;
-
 
   /**
    * setUp() performs any pre-requisite tasks that need to happen.
@@ -509,6 +524,23 @@ class AutologoutAjaxTestCase extends BackdropWebTestCase {
   }
 
   /**
+   * Extract an autologout AJAX token from the current page content.
+   *
+   * @param string $token_name
+   *   The JS settings key, e.g. 'ajax_logout_token'.
+   *
+   * @return string|null
+   *   The token value, or NULL if not found.
+   */
+  protected function getAutologoutToken($token_name) {
+    $content = $this->backdropGetContent();
+    if (preg_match('/"' . preg_quote($token_name, '/') . '"\s*:\s*"([^"]+)"/', $content, $matches)) {
+      return $matches[1];
+    }
+    return NULL;
+  }
+
+  /**
    * Test ajax logout callbacks work as expected.
    */
   public function testAutologoutByAjax() {
@@ -517,13 +549,15 @@ class AutologoutAjaxTestCase extends BackdropWebTestCase {
     $config->set('autologout_padding', 10);
     $config->save();
 
-    // Check that the user can access the page after login.
+    // Check that the user can access the page after login, and get tokens.
     $this->backdropGet('node');
     $this->assertResponse(200, t('Homepage is accessible'));
     $this->assertText(t('Log out'), t('User is still logged in.'));
+    $get_time_left_token = $this->getAutologoutToken('ajax_get_time_left_token');
+    $logout_token = $this->getAutologoutToken('ajax_logout_token');
 
     // Test the time remaining callback works as expected.
-    $result = $this->backdropGet('autologout_ajax_get_time_left');
+    $result = (string) $this->backdropGet('autologout_ajax_get_time_left', array('query' => array('token' => $get_time_left_token)));
     $this->assertResponse(200, t('autologout_ajax_get_time_left is accessible when logged in'));
     $result = json_decode($result);
     $this->assertEqual('insert', $result[1]->command, t('autologout_ajax_get_time_left returns an insert command for adding the jstimer onto the page'));
@@ -531,7 +565,7 @@ class AutologoutAjaxTestCase extends BackdropWebTestCase {
     $this->assert(!empty($result[2]->settings->time) && is_int($result[2]->settings->time) && $result[2]->settings->time > 0, t('autologout_ajax_get_time_left returns the remaining time as a positive integer'));
 
     // Test that ajax logout works as expected.
-    $json_string = $this->backdropGet('autologout_ahah_logout');
+    $json_string = $this->backdropGet('autologout_ahah_logout', array('query' => array('token' => $logout_token)));
     $this->assertResponse(200, t('autologout_ahah_logout is accessible when logged in'));
 
     // Check we are now logged out.
@@ -540,12 +574,12 @@ class AutologoutAjaxTestCase extends BackdropWebTestCase {
     $this->assertNoText(t('Log out'), t('User is no longer logged in.'));
 
     // Check further get time remaining requests return access denied.
-    $result = $this->backdropGet('autologout_ajax_get_time_left');
+    $result = (string) $this->backdropGet('autologout_ajax_get_time_left', array('query' => array('token' => $get_time_left_token)));
     $result = json_decode($result);
     $this->assertEqual($result[1]->command, 'alert', t('When logged out, autologout_ajax_get_time_left returns the normal Backdrop ajax alert.'));
 
     // Check further logout requests result in access denied.
-    $this->backdropGet('autologout_ahah_logout');
+    $this->backdropGet('autologout_ahah_logout', array('query' => array('token' => $logout_token)));
     $this->assertResponse(403, t('autologout_ahah logout is not accessible when logged out.'));
   }
 
@@ -558,16 +592,18 @@ class AutologoutAjaxTestCase extends BackdropWebTestCase {
     $config->set('autologout_padding', 5);
     $config->save();
 
-    // Check that the user can access the page after login.
+    // Check that the user can access the page after login, and get tokens.
     $this->backdropGet('node');
     $this->assertResponse(200, t('Homepage is accessible'));
     $this->assertText(t('Log out'), t('User is still logged in.'));
+    $set_last_token = $this->getAutologoutToken('ajax_set_last_token');
+    $logout_token = $this->getAutologoutToken('ajax_logout_token');
 
     // Sleep for half the timeout.
     sleep(14);
 
     // Test that ajax stay logged in works.
-    $result = $this->backdropGet('autologout_ahah_set_last');
+    $result = (string) $this->backdropGet('autologout_ahah_set_last', array('query' => array('token' => $set_last_token)));
     $this->assertResponse(200, t('autologout_ahah_set_last is accessible when logged in.'));
     $result = json_decode($result);
     $this->assertEqual('insert', $result[1]->command, t('autologout_ajax_set_last returns an insert command for adding the jstimer onto the page'));
@@ -582,11 +618,11 @@ class AutologoutAjaxTestCase extends BackdropWebTestCase {
     $this->assertText(t('Log out'), t('User is still logged in.'));
 
     // Logout.
-    $this->backdropGet('autologout_ahah_logout');
+    $this->backdropGet('autologout_ahah_logout', array('query' => array('token' => $logout_token)));
     $this->assertResponse(200, t('autologout_ahah_logout is accessible when logged in.'));
 
     // Check further requests to set last result in 403.
-    $result = $this->backdropGet('autologout_ahah_set_last');
+    $result = (string) $this->backdropGet('autologout_ahah_set_last', array('query' => array('token' => $set_last_token)));
     $result = json_decode($result);
     $this->assertEqual($result[1]->command, 'alert', t('When logged out, autologout_ajax_set_last returns the normal Backdrop ajax alert.'));
   }
@@ -599,11 +635,15 @@ class AutoLogoutByRoleTestCase extends BackdropWebTestCase {
 
   /**
    * User with admin rights.
+   *
+   * @var User
    */
   protected $user;
 
   /**
    * A role for the user.
+   *
+   * @var object
    */
   protected $role;
 

@@ -457,6 +457,9 @@ function autologout_init() {
     'refresh_only' => $refresh_only,
     'no_dialog' => $no_dialog,
     'use_alt_logout_method' => $use_alt_logout_method,
+    'ajax_logout_token' => backdrop_get_token('autologout_ahah_logout'),
+    'ajax_set_last_token' => backdrop_get_token('autologout_ahah_set_last'),
+    'ajax_get_time_left_token' => backdrop_get_token('autologout_ajax_get_time_left'),
   );
 
   // If this is an AJAX request, then the logout redirect url should still be
@@ -553,6 +556,12 @@ function autologout_preprocess_page(&$variables) {
  * AJAX callback that returns the time remaining for this user is logged out.
  */
 function autologout_ahah_get_remaining_time() {
+  $token = isset($_GET['token']) ? $_GET['token'] : '';
+  if (!backdrop_valid_token($token, 'autologout_ajax_get_time_left')) {
+    backdrop_add_http_header('Status', '403 Forbidden');
+    backdrop_exit();
+  }
+
   $time_remaining_ms = _autologout_get_remaining_time() * 1000;
 
   // Reset the timer.
@@ -568,6 +577,12 @@ function autologout_ahah_get_remaining_time() {
  * Ajax callback to reset the last access session variable.
  */
 function autologout_ahah_set_last() {
+  $token = isset($_GET['token']) ? $_GET['token'] : '';
+  if (!backdrop_valid_token($token, 'autologout_ahah_set_last')) {
+    backdrop_add_http_header('Status', '403 Forbidden');
+    backdrop_exit();
+  }
+
   $_SESSION['autologout_last'] = time();
 
    // Let others act.
@@ -586,6 +601,12 @@ function autologout_ahah_set_last() {
  * AJAX callback that performs the actual logout and redirects the user.
  */
 function autologout_ahah_logout($type = 'ajax') {
+  $token = isset($_GET['token']) ? $_GET['token'] : '';
+  if (!backdrop_valid_token($token, 'autologout_ahah_logout')) {
+    backdrop_add_http_header('Status', '403 Forbidden');
+    backdrop_exit();
+  }
+
   _autologout_logout();
 
   if ($type !== 'ajax') {

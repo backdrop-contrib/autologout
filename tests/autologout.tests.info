@@ -21,3 +21,9 @@ name = Autologout Tests by role
 description = Ensure that the auto logout module functions as expected for a normal (non admin) user with a role.
 group = Autologout
 file = autologout.test
+
+[AutologoutCsrfTokenTestCase]
+name = Autologout CSRF Token Tests
+description = Ensure AJAX endpoints are protected by CSRF tokens.
+group = Autologout
+file = autologout_csrf_token.test
