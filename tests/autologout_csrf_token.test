@@ -1,0 +1,159 @@
+<?php
+
+/**
+ * @file
+ * Simpletest CSRF token tests for autologout.
+ */
+
+/**
+ * Tests that autologout AJAX endpoints are protected by CSRF tokens.
+ */
+class AutologoutCsrfTokenTestCase extends BackdropWebTestCase {
+
+  /**
+   * User with access to autologout-protected pages.
+   *
+   * @var User
+   */
+  protected $privileged_user;
+
+  /**
+   * setUp() performs any pre-requisite tasks that need to happen.
+   */
+  public function setUp() {
+    parent::setUp('autologout');
+
+    $this->privileged_user = $this->backdropCreateUser(array(
+      'access content',
+      'administer site configuration',
+      'administer autologout',
+    ));
+    $this->backdropLogin($this->privileged_user);
+
+    variable_set('autologout_timeout', 100);
+    variable_set('autologout_padding', 10);
+  }
+
+  /**
+   * Extract an autologout AJAX token from the current page content.
+   *
+   * @param string $token_name
+   *   The JS settings key, e.g. 'ajax_logout_token'.
+   *
+   * @return string|null
+   *   The token value, or NULL if not found.
+   */
+  protected function getAutologoutToken($token_name) {
+    $content = $this->backdropGetContent();
+    if (preg_match('/"' . preg_quote($token_name, '/') . '"\s*:\s*"([^"]+)"/', $content, $matches)) {
+      return $matches[1];
+    }
+    return NULL;
+  }
+
+  /**
+   * Test that CSRF tokens are included in the page JS settings.
+   */
+  public function testCsrfTokensAreIncludedInPageSettings() {
+    $this->backdropGet('node');
+    $this->assertResponse(200, t('Homepage is accessible.'));
+
+    $logout_token = $this->getAutologoutToken('ajax_logout_token');
+    $set_last_token = $this->getAutologoutToken('ajax_set_last_token');
+    $get_time_left_token = $this->getAutologoutToken('ajax_get_time_left_token');
+
+    $this->assertNotNull($logout_token, t('ajax_logout_token is present in Backdrop.settings.autologout.'));
+    $this->assertNotNull($set_last_token, t('ajax_set_last_token is present in Backdrop.settings.autologout.'));
+    $this->assertNotNull($get_time_left_token, t('ajax_get_time_left_token is present in Backdrop.settings.autologout.'));
+
+    // Tokens should be non-empty strings.
+    $this->assertTrue(strlen($logout_token) > 0, t('ajax_logout_token is a non-empty string.'));
+    $this->assertTrue(strlen($set_last_token) > 0, t('ajax_set_last_token is a non-empty string.'));
+    $this->assertTrue(strlen($get_time_left_token) > 0, t('ajax_get_time_left_token is a non-empty string.'));
+  }
+
+  /**
+   * Test that AJAX endpoints return 403 when no token is provided.
+   */
+  public function testAjaxEndpointsRequireToken() {
+    $this->backdropGet('autologout_ajax_get_time_left');
+    $this->assertResponse(403, t('autologout_ajax_get_time_left returns 403 when no token is provided.'));
+
+    $this->backdropGet('autologout_ahah_set_last');
+    $this->assertResponse(403, t('autologout_ahah_set_last returns 403 when no token is provided.'));
+
+    $this->backdropGet('autologout_ahah_logout');
+    $this->assertResponse(403, t('autologout_ahah_logout returns 403 when no token is provided.'));
+  }
+
+  /**
+   * Test that AJAX endpoints return 403 when an invalid token is provided.
+   */
+  public function testAjaxEndpointsRejectInvalidToken() {
+    $invalid_token = 'this-is-not-a-valid-token';
+
+    $this->backdropGet('autologout_ajax_get_time_left', array('query' => array('token' => $invalid_token)));
+    $this->assertResponse(403, t('autologout_ajax_get_time_left returns 403 when an invalid token is provided.'));
+
+    $this->backdropGet('autologout_ahah_set_last', array('query' => array('token' => $invalid_token)));
+    $this->assertResponse(403, t('autologout_ahah_set_last returns 403 when an invalid token is provided.'));
+
+    $this->backdropGet('autologout_ahah_logout', array('query' => array('token' => $invalid_token)));
+    $this->assertResponse(403, t('autologout_ahah_logout returns 403 when an invalid token is provided.'));
+  }
+
+  /**
+   * Test that a token for one endpoint is not accepted by another endpoint.
+   */
+  public function testAjaxEndpointsRejectCrossTokens() {
+    $this->backdropGet('node');
+
+    $logout_token = $this->getAutologoutToken('ajax_logout_token');
+    $set_last_token = $this->getAutologoutToken('ajax_set_last_token');
+    $get_time_left_token = $this->getAutologoutToken('ajax_get_time_left_token');
+
+    // Use the logout token on the get-time-left endpoint.
+    $this->backdropGet('autologout_ajax_get_time_left', array('query' => array('token' => $logout_token)));
+    $this->assertResponse(403, t('autologout_ajax_get_time_left returns 403 when the logout token is used instead.'));
+
+    // Use the get-time-left token on the set-last endpoint.
+    $this->backdropGet('autologout_ahah_set_last', array('query' => array('token' => $get_time_left_token)));
+    $this->assertResponse(403, t('autologout_ahah_set_last returns 403 when the get-time-left token is used instead.'));
+
+    // Use the set-last token on the logout endpoint.
+    $this->backdropGet('autologout_ahah_logout', array('query' => array('token' => $set_last_token)));
+    $this->assertResponse(403, t('autologout_ahah_logout returns 403 when the set-last token is used instead.'));
+  }
+
+  /**
+   * Test that AJAX endpoints accept a valid token and work correctly.
+   */
+  public function testAjaxEndpointsAcceptValidToken() {
+    $this->backdropGet('node');
+
+    $logout_token = $this->getAutologoutToken('ajax_logout_token');
+    $set_last_token = $this->getAutologoutToken('ajax_set_last_token');
+    $get_time_left_token = $this->getAutologoutToken('ajax_get_time_left_token');
+
+    // get_time_left with valid token returns time data.
+    $result = (string) $this->backdropGet('autologout_ajax_get_time_left', array('query' => array('token' => $get_time_left_token)));
+    $this->assertResponse(200, t('autologout_ajax_get_time_left returns 200 with a valid token.'));
+    $result = json_decode($result);
+    $this->assertEqual('insert', $result[1]->command, t('autologout_ajax_get_time_left returns an insert command with a valid token.'));
+    $this->assert(isset($result[2]->settings->time) && $result[2]->settings->time > 0, t('autologout_ajax_get_time_left returns a positive time value with a valid token.'));
+
+    // set_last with valid token updates the session and returns timer markup.
+    $result = (string) $this->backdropGet('autologout_ahah_set_last', array('query' => array('token' => $set_last_token)));
+    $this->assertResponse(200, t('autologout_ahah_set_last returns 200 with a valid token.'));
+    $result = json_decode($result);
+    $this->assertEqual('insert', $result[1]->command, t('autologout_ahah_set_last returns an insert command with a valid token.'));
+
+    // logout with valid token performs logout.
+    $this->backdropGet('autologout_ahah_logout', array('query' => array('token' => $logout_token)));
+    $this->assertResponse(200, t('autologout_ahah_logout returns 200 with a valid token.'));
+
+    // Confirm the user is now logged out.
+    $this->backdropGet('node');
+    $this->assertNoText(t('Log out'), t('User is logged out after autologout_ahah_logout with valid token.'));
+  }
+}

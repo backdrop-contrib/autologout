@@ -155,11 +155,11 @@
 
       function logout() {
         if (localSettings.use_alt_logout_method) {
-          window.location = Backdrop.settings.basePath + "?q=autologout_ahah_logout/alt";
+          window.location = Backdrop.settings.basePath + "?q=autologout_ahah_logout/alt&token=" + localSettings.ajax_logout_token;
         }
         else {
           $.ajax({
-            url: Backdrop.settings.basePath + "?q=autologout_ahah_logout",
+            url: Backdrop.settings.basePath + "?q=autologout_ahah_logout&token=" + localSettings.ajax_logout_token,
             type: "POST",
             progress: {},
             success: function() {
@@ -219,7 +219,7 @@
       };
 
       Backdrop.ajax['autologout.getTimeLeft'] = new Backdrop.ajax(null, $(document.body), {
-        url: Backdrop.settings.basePath  + '?q=autologout_ajax_get_time_left',
+        url: Backdrop.settings.basePath + '?q=autologout_ajax_get_time_left&token=' + localSettings.ajax_get_time_left_token,
         event: 'autologout.getTimeLeft',
         error: function(XMLHttpRequest, textStatus) {
           // Disable error reporting to the screen.
@@ -274,7 +274,7 @@
       };
 
       Backdrop.ajax['autologout.refresh'] = new Backdrop.ajax(null, $(document.body), {
-        url: Backdrop.settings.basePath  + '?q=autologout_ahah_set_last',
+        url: Backdrop.settings.basePath + '?q=autologout_ahah_set_last&token=' + localSettings.ajax_set_last_token,
         event: 'autologout.refresh',
         error: function(XMLHttpRequest, textStatus) {
           // Disable error reporting to the screen.
