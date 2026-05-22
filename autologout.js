@@ -200,7 +200,16 @@
             window.location = localSettings.redirect_url;
           }
 
-          callback(response[2].settings.time);
+          response.forEach(
+              function(element) {
+                  if(element.command == 'settings')
+                  {
+                      if (typeof element.settings.time !== 'undefined') {
+                          callback(element.settings.time);
+                      }
+                  }
+              }
+          );
 
           // Let Backdrop.ajax handle the JSON response.
           return ajax.success(response, status);
@@ -221,6 +230,9 @@
       Backdrop.ajax['autologout.getTimeLeft'] = new Backdrop.ajax(null, $(document.body), {
         url: Backdrop.settings.basePath + '?q=autologout_ajax_get_time_left&token=' + localSettings.ajax_get_time_left_token,
         event: 'autologout.getTimeLeft',
+        submit: {
+          'ajax_page_state': Backdrop.settings.ajaxPageState
+        },
         error: function(XMLHttpRequest, textStatus) {
           // Disable error reporting to the screen.
         },
@@ -276,6 +288,9 @@
       Backdrop.ajax['autologout.refresh'] = new Backdrop.ajax(null, $(document.body), {
         url: Backdrop.settings.basePath + '?q=autologout_ahah_set_last&token=' + localSettings.ajax_set_last_token,
         event: 'autologout.refresh',
+        submit: {
+          'ajax_page_state': Backdrop.settings.ajaxPageState
+        },
         error: function(XMLHttpRequest, textStatus) {
           // Disable error reporting to the screen.
         }

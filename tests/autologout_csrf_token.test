@@ -30,8 +30,8 @@ class AutologoutCsrfTokenTestCase extends BackdropWebTestCase {
     ));
     $this->backdropLogin($this->privileged_user);
 
-    variable_set('autologout_timeout', 100);
-    variable_set('autologout_padding', 10);
+    config_set('autologout.settings', 'autologout_timeout', 100);
+    config_set('autologout.settings', 'autologout_padding', 10);
   }
 
   /**

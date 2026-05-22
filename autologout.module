@@ -440,11 +440,15 @@ function autologout_init() {
   $now = time();
   $timeout = _autologout_get_user_timeout();
   $timeout_padding = $config->get('autologout_padding');
-  $redirect_url = $config->get('autologout_redirect_url');
-  $redirect_query = backdrop_get_destination() + array('autologout_timeout' => 1);
+  $autologout_redirect_url = $config->get('autologout_redirect_url');
+  $redirect_url = empty($autologout_redirect_url) ? current_path() : $autologout_redirect_url;
+  $redirect_query = autologout_get_current_path_as_destination() + array('autologout_timeout' => 1);
   $no_dialog = $config->get('autologout_no_dialog');
   $use_alt_logout_method = $config->get('autologout_use_alt_logout_method');
   backdrop_add_library('system', 'ui.dialog');
+
+  // Provide a hook to allow the redirect URL and query to be customised
+  backdrop_alter('autologout_redirect_url', $redirect_url, $redirect_query);
 
   // Get all settings JS will need for dialog.
   $msg = t($config->get('autologout_message'));
@@ -499,6 +503,26 @@ function autologout_init() {
 }
 
 /**
+ * Builds a destination query parameter for the current page.
+ *
+ * This is identical to backdrop_get_destination(), except that we always encode
+ * any existing destination query-string parameter, rather than honour it as an
+ * override.
+ *
+ * This causes the user to be returned to the exact same URL they were on when
+ * they were auto-logged-off (with destination parameter untouched), rather than
+ * being directed straight to their destination.
+ */
+function autologout_get_current_path_as_destination() {
+  $path = (string) current_path();
+  $query = backdrop_http_build_query(backdrop_get_query_parameters());
+  if ($query != '') {
+    $path .= '?' . $query;
+  }
+  return array('destination' => $path);
+}
+
+/**
  * Implements hook_autologout_prevent().
  */
 function autologout_autologout_prevent() {
@@ -525,6 +549,19 @@ function autologout_autologout_prevent() {
   if (!empty($user->data['remember_me'])) {
     return TRUE;
   }
+  // If user IP address is in the whitelist.
+  $stored_whitelist = config_get('autologout_settings', 'autologout_whitelisted_ip_addresses');
+  if (!empty($stored_whitelist)) {
+    $ip_address_whitelist = array_map(
+      'trim',
+      explode("\n", trim($stored_whitelist))
+    );
+
+    if (($ip_address_whitelist) && in_array(ip_address(), $ip_address_whitelist)) {
+      return TRUE;
+    }
+  }
+
 }
 
 /**
@@ -739,7 +776,7 @@ function _autologout_logout() {
   global $user;
 
   if (config_get('autologout.settings','autologout_use_watchdog')) {
-    watchdog('user', 'Session automatically closed for %name by autologout.', array('%name' => $user->name));
+    watchdog('autologout', 'Session automatically closed for %name by autologout.', array('%name' => $user->name));
   }
 
   // Destroy the current session.
@@ -773,7 +810,7 @@ function _autologout_inactivity_message() {
   $message = config_get('autologout.settings','autologout_inactivity_message');
   backdrop_alter('autologout_message', $message);
   if (!empty($message)) {
-    backdrop_set_message(filter_xss($message));
+    backdrop_set_message(filter_xss(t($message)), 'status', FALSE);
   }
 }
 

@@ -26,5 +26,6 @@
       "timeout": 7200
     }
   },
-  "autologout_user_logout": 1
+  "autologout_user_logout": 1,
+  "autologout_whitelisted_ip_addresses": ""
 }

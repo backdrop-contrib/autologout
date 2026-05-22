@@ -14,7 +14,7 @@ function autologout_settings() {
 
   $form = array();
   $config = config('autologout.settings');
-  $timeout = config_get('autologout.settings','autologout_timeout');
+  $timeout = config_get('autologout.settings', 'autologout_timeout');
 
   if (module_exists('jstimer')) {
     if (!module_exists('jst_timer')) {
@@ -38,7 +38,7 @@ function autologout_settings() {
   $form['autologout_max_timeout'] = array(
     '#type' => 'textfield',
     '#title' => t('Max timeout setting'),
-    '#default_value' => config_get('autologout.settings','autologout_max_timeout'),
+    '#default_value' => config_get('autologout.settings', 'autologout_max_timeout'),
     '#size' => 10,
     '#maxlength' => 12,
     '#weight' => -8,
@@ -48,7 +48,7 @@ function autologout_settings() {
   $form['autologout_max_padding'] = array(
     '#type' => 'textfield',
     '#title' => t('Max padding setting'),
-    '#default_value' => config_get('autologout.settings','autologout_max_padding'),
+    '#default_value' => config_get('autologout.settings', 'autologout_max_padding'),
     '#size' => 10,
     '#maxlength' => 12,
     '#weight' => -9,
@@ -58,7 +58,7 @@ function autologout_settings() {
   $form['autologout_padding'] = array(
     '#type' => 'textfield',
     '#title' => t('Timeout padding'),
-    '#default_value' => config_get('autologout.settings','autologout_padding'),
+    '#default_value' => config_get('autologout.settings', 'autologout_padding'),
     '#size' => 8,
     '#weight' => -6,
     '#description' => t('How many seconds to give a user to respond to the logout dialog before ending their session.'),
@@ -67,7 +67,7 @@ function autologout_settings() {
   $form['autologout_user_logout'] = array(
     '#type' => 'checkbox',
     '#title' => t('User Timeout'),
-    '#default_value' => config_get('autologout.settings','autologout_user_logout'),
+    '#default_value' => config_get('autologout.settings', 'autologout_user_logout'),
     '#weight' => -5,
     '#description' => t('Enable each user to have their own timeout threshold.'),
   );
@@ -75,7 +75,7 @@ function autologout_settings() {
   $form['autologout_role_logout'] = array(
     '#type' => 'checkbox',
     '#title' => t('Role Timeout'),
-    '#default_value' => config_get('autologout.settings','autologout_role_logout'),
+    '#default_value' => config_get('autologout.settings', 'autologout_role_logout'),
     '#weight' => -4,
     '#description' => t('Enable each role to have its own timeout threshold, a refresh maybe required for changes to take effect. Any role not ticked will use the default timeout value. Any role can have a value of 0 which means that they will never be logged out.'),
   );
@@ -83,7 +83,7 @@ function autologout_settings() {
   $form['autologout_role_logout_max'] = array(
     '#type' => 'checkbox',
     '#title' => t('Use highest role timeout value'),
-    '#default_value' => config_get('autologout.settings','autologout_role_logout_max'),
+    '#default_value' => config_get('autologout.settings', 'autologout_role_logout_max'),
     '#weight' => -3,
     '#description' => t('Check this to use the highest timeout value instead of the lowest for users that have more than one role.'),
     '#states' => [
@@ -97,29 +97,29 @@ function autologout_settings() {
   $form['autologout_redirect_url']  = array(
     '#type' => 'textfield',
     '#title' => t('Redirect URL at logout'),
-    '#default_value' => config_get('autologout.settings','autologout_redirect_url'),
+    '#default_value' => config_get('autologout.settings', 'autologout_redirect_url'),
     '#size' => 40,
-    '#description' => t('Send users to this internal page when they are logged out.'),
+    '#description' => t('Send users to this internal page when they are logged out. Leave blank to disable redirection and reload the same page instead.'),
   );
 
   $form['autologout_no_dialog'] = array(
     '#type' => 'checkbox',
     '#title' => t('Do not display the logout dialog'),
-    '#default_value' => config_get('autologout.settings','autologout_no_dialog'),
+    '#default_value' => config_get('autologout.settings', 'autologout_no_dialog'),
     '#description' => t('Enable this if you want users to logout right away and skip displaying the logout dialog.'),
   );
 
   $form['autologout_use_alt_logout_method'] = array(
     '#type' => 'checkbox',
     '#title' => t('Use alternate logout method'),
-    '#default_value' => config_get('autologout.settings','autologout_use_alt_logout_method'),
+    '#default_value' => config_get('autologout.settings', 'autologout_use_alt_logout_method'),
     '#description' => t('Normally when auto logout is triggered, it is done via an AJAX service call. Sites that use an SSO provider, such as CAS, are likely to see this request fail with the error "Origin is not allowed by Access-Control-Allow-Origin". The alternate approach is to have the auto logout trigger a page redirect to initiate the logout process instead.'),
   );
 
   $form['autologout_message']  = array(
     '#type' => 'textarea',
     '#title' => t('Message to display in the logout dialog'),
-    '#default_value' => config_get('autologout.settings','autologout_message'),
+    '#default_value' => config_get('autologout.settings', 'autologout_message'),
     '#size' => 40,
     '#description' => t('This message must be plain text as it might appear in a JavaScript confirm dialog.')
       . ' ' . t('This text will passed through <a href="!url">filter_xss</a>.',
@@ -129,7 +129,7 @@ function autologout_settings() {
   $form['autologout_inactivity_message']  = array(
     '#type' => 'textarea',
     '#title' => t('Message to display to the user after they are logged out.'),
-    '#default_value' => config_get('autologout.settings','autologout_inactivity_message'),
+    '#default_value' => config_get('autologout.settings', 'autologout_inactivity_message'),
     '#size' => 40,
     '#description' => t('This message is displayed after the user was logged out due to inactivity. You can leave this blank to show no message to the user.')
       . ' ' . t('This text will passed through <a href="!url">filter_xss</a>.',
@@ -139,22 +139,30 @@ function autologout_settings() {
   $form['autologout_use_watchdog'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable watchdog Automated Logout logging'),
-    '#default_value' => config_get('autologout.settings','autologout_use_watchdog'),
+    '#default_value' => config_get('autologout.settings', 'autologout_use_watchdog'),
     '#description' => t('Enable logging of automatically logged out users'),
   );
 
   $form['autologout_enforce_admin'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enforce auto logout on admin pages'),
-    '#default_value' => config_get('autologout.settings','autologout_enforce_admin'),
+    '#default_value' => config_get('autologout.settings', 'autologout_enforce_admin'),
     '#description' => t('If checked, then users will be automatically logged out when administering the site.'),
+  );
+
+  $form['autologout_whitelisted_ip_addresses'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Whitelisted ip addresses'),
+    '#default_value' => config_get('autologout.settings', 'autologout_whitelisted_ip_addresses'),
+    '#size' => 40,
+    '#description' => t('Users from these IP addresses will not be logged out.'),
   );
 
   if (module_exists('jstimer') && module_exists('jst_timer')) {
     $form['autologout_jstimer_format']  = array(
       '#type' => 'textfield',
       '#title' => t('Autologout block time format'),
-      '#default_value' => config_get('autologout.settings','autologout_jstimer_format'),
+      '#default_value' => config_get('autologout.settings', 'autologout_jstimer_format'),
       '#description' => t('Change the display of the dynamic timer.  Available replacement values are: %day%, %month%, %year%, %dow%, %moy%, %years%, %ydays%, %days%, %hours%, %mins%, and %secs%.'),
     );
   }
@@ -228,6 +236,19 @@ function autologout_settings_validate($form, &$form_state) {
   if (!is_numeric($timeout) || ((int) $timeout != $timeout) || $timeout < 60 || $timeout > $max_timeout) {
     form_set_error('autologout_timeout', t('The timeout must be an integer greater than 60 and less then %max.', array('%max' => $max_timeout)));
   }
+
+  // Validate ip address list
+  $whitelisted_ip_addresses_list = explode("\n",trim($form_state['values']['autologout_whitelisted_ip_addresses']));
+
+  foreach ($whitelisted_ip_addresses_list as $ip_address) {
+    if (!empty($ip_address) && !filter_var(trim($ip_address), FILTER_VALIDATE_IP)) {
+      form_set_error(
+        'whitelisted_ip_addresses',
+        t('Whitelisted IP address list should contain only valid IP addresses, one per row')
+      );
+    }
+  }
+
 }
 
 
